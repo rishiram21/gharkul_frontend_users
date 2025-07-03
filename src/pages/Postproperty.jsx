@@ -3,10 +3,13 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from '../context/Authcontext'; // Adjust the import path as necessary
 
-
 const PostProperty = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext); // Access the user from AuthContext
+  const pinCodeRegex = /^[1-9][0-9]{0,5}$/; // allow partial match while typing
+
+
+  console.log(user);
 
   // State declarations remain the same
   const [enums, setEnums] = useState({
@@ -17,8 +20,7 @@ const PostProperty = () => {
     apartmentType: [],
   });
 
-
- useEffect(() => {
+  useEffect(() => {
     const fetchEnums = async () => {
       try {
         const response = await axios.get(
@@ -33,14 +35,13 @@ const PostProperty = () => {
     fetchEnums();
   }, []);
 
-
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   // Basic state
-  // const [city, setCity] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [subPropertyType, setSubPropertyType] = useState("");
   const [transactionType, setTransactionType] = useState("");
+
 
   // Property Details
   const [propertyName, setPropertyName] = useState("");
@@ -58,7 +59,7 @@ const PostProperty = () => {
   const [pincode, setPincode] = useState("");
 
   // Rental/Purchase Details
-  const [expectedRent, setExpectedRent] = useState("");
+  // const [expectedRent, setExpectedRent] = useState("");
   const [expectedDeposit, setExpectedDeposit] = useState("");
   const [monthlyMaintenance, setMonthlyMaintenance] = useState("");
   const [availableFrom, setAvailableFrom] = useState("");
@@ -66,6 +67,8 @@ const PostProperty = () => {
   const [furnishing, setFurnishing] = useState("");
   const [expectedPrice, setExpectedPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [postedByUserPhoneNumber, setpostedByUserPhoneNumber] = useState('');
+
 
   // PG Specific
   const [roomType, setRoomType] = useState("");
@@ -129,10 +132,16 @@ const PostProperty = () => {
     const formData = new FormData();
 
     // Use the user ID from the context
-    const userId = user?.userId || 1; // Fallback to 1 if user is not available
+    const userId = user?.id; // Access the userId from the user object
+
+    if (!userId) {
+      console.error("User ID is not available");
+      alert("User ID is not available. Please log in again.");
+      return;
+    }
 
     const propertyData = {
-      postedByUserId: userId, // Use the user ID from the context
+      postedByUserId: user.id, // Use the user ID from the context
       category: propertyType || "RESIDENTIAL",
       propertyFor: transactionType || "RENT",
       apartmentType: apartmentType || "FLAT",
@@ -162,6 +171,8 @@ const PostProperty = () => {
       furnishedType: furnishing || "UNFURNISHED",
       description: description || "test",
       amenityIds: selectedAmenities,
+      postedByUserPhoneNumber: postedByUserPhoneNumber || "",
+
     };
 
     console.log("Property Data:", propertyData);
@@ -211,8 +222,8 @@ const PostProperty = () => {
         <p className="mb-2">
           {propertyType === "RESIDENTIAL" &&
           (transactionType === "RENT" || transactionType === "SELL")
-            ? "Upload 1-4 photos"
-            : "Upload up to 10 photos"}
+            ? "Upload photo"
+            : "Upload photo"}
         </p>
         <input
           type="file"
@@ -220,13 +231,13 @@ const PostProperty = () => {
           onChange={handleFileChange}
           className="mb-4"
         />
-        <button
+        {/* <button
           type="button"
           onClick={handleSubmit}
           className="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors"
         >
           Upload Media
-        </button>
+        </button> */}
         {selectedFiles.length > 0 && (
           <div className="mt-4">
             <p>Selected Files:</p>
@@ -352,28 +363,24 @@ const PostProperty = () => {
 
               <div className="flex space-x-3 mb-3">
                 <select
-                  className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  value={bhkType}
-                  onChange={(e) => setBhkType(e.target.value)}
-                >
-                  <option value="">BHK Type</option>
-                  {enums.bhkType.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
+  className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={bhkType}
+  onChange={(e) => setBhkType(e.target.value)}
+>
+  <option value="">BHK Type</option>
+  {enums.bhkType.map((type) => {
+    const displayText = type
+      .replace('BHK_', '')      // Remove prefix
+      .replace('_', '.')        // Replace first underscore with decimal
+    return (
+      <option key={type} value={type}>
+        {`BHK ${displayText}`}
+      </option>
+    );
+  })}
+</select>
 
-                <input
-                  type="number"
-                  className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  placeholder="Floor"
-                  value={floor}
-                  onChange={(e) => setFloor(e.target.value)}
-                  min={1}
-                />
-
-                <input
+ <input
                   type="number"
                   className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   placeholder="Total Floors"
@@ -381,6 +388,24 @@ const PostProperty = () => {
                   onChange={(e) => setTotalFloor(e.target.value)}
                   min={1}
                 />
+
+
+               <input
+  type="number"
+  className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  placeholder="Floor"
+  value={floor}
+  onChange={(e) => {
+    const val = parseInt(e.target.value, 10);
+    if (!isNaN(val) && val <= totalFloor) {
+      setFloor(val);
+    }
+  }}
+  min={0}
+/>
+
+
+               
               </div>
               <div className="flex space-x-3 mb-3">
                 <input
@@ -391,12 +416,18 @@ const PostProperty = () => {
                   onChange={(e) => setBuiltUpArea(e.target.value)}
                 />
                 <input
-                  type="text"
-                  placeholder="Carpet Area (sq.ft)"
-                  className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  value={carpetArea}
-                  onChange={(e) => setCarpetArea(e.target.value)}
-                />
+  type="text"
+  placeholder="Carpet Area (sq.ft)"
+  className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={carpetArea}
+  onChange={(e) => {
+    const val = e.target.value;
+    if (!isNaN(val) && parseFloat(val) < parseFloat(builtUpArea)) {
+      setCarpetArea(val);
+    }
+  }}
+/>
+
               </div>
             </>
           )}
@@ -620,13 +651,20 @@ const PostProperty = () => {
             value={state}
             onChange={(e) => setState(e.target.value)}
           />
-          <input
-            type="text"
-            placeholder="Pin Code"
-            className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-            value={pincode}
-            onChange={(e) => setPincode(e.target.value)}
-          />
+
+<input
+  type="text"
+  placeholder="Pin Code"
+  className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={pincode}
+  onChange={(e) => {
+    const val = e.target.value;
+    if (val === '' || pinCodeRegex.test(val)) {
+      setPincode(val);
+    }
+  }}
+/>
+
         </div>
       </div>
     );
@@ -679,8 +717,8 @@ const PostProperty = () => {
                 type="text"
                 placeholder="Expected Rent (INR)"
                 className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                value={expectedRent}
-                onChange={(e) => setExpectedRent(e.target.value)}
+                value={expectedPrice}
+                onChange={(e) => setExpectedPrice(e.target.value)}
               />
               <input
                 type="text"
@@ -699,13 +737,18 @@ const PostProperty = () => {
               onChange={(e) => setMonthlyMaintenance(e.target.value)}
             />
 
-            <input
-              type="date"
-              placeholder="Available From"
-              className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              value={availableFrom}
-              onChange={(e) => setAvailableFrom(e.target.value)}
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+  Available From
+</label>
+<input
+  type="date"
+  placeholder="Available From"
+  className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={availableFrom}
+  onChange={(e) => setAvailableFrom(e.target.value)}
+  min={new Date().toISOString().split("T")[0]} // this disables past dates
+/>
+
 
             <div className="flex flex-wrap gap-2 mb-3">
               <span className="text-sm text-gray-600 w-full mb-2">
@@ -773,14 +816,18 @@ const PostProperty = () => {
               value={expectedPrice}
               onChange={(e) => setExpectedPrice(e.target.value)}
             />
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+  Available From
+</label>
+<input
+  type="date"
+  placeholder="Available From"
+  className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={availableFrom}
+  onChange={(e) => setAvailableFrom(e.target.value)}
+  min={new Date().toISOString().split("T")[0]} // this disables past dates
+/>
 
-            <input
-              type="date"
-              placeholder="Available From"
-              className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              value={availableFrom}
-              onChange={(e) => setAvailableFrom(e.target.value)}
-            />
 
             <textarea
               placeholder="Description"
@@ -801,8 +848,8 @@ const PostProperty = () => {
                   type="text"
                   placeholder="Expected Rent (INR)"
                   className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  value={expectedRent}
-                  onChange={(e) => setExpectedRent(e.target.value)}
+                  value={expectedPrice}
+                  onChange={(e) => setExpectedPrice(e.target.value)}
                 />
                 <input
                   type="text"
@@ -812,8 +859,6 @@ const PostProperty = () => {
                   onChange={(e) => setExpectedDeposit(e.target.value)}
                 />
               </div>
-
-              
 
               <div className="flex flex-wrap gap-2 mb-3">
                 <span className="text-sm text-gray-600 w-full mb-2">
@@ -855,21 +900,27 @@ const PostProperty = () => {
                 ))}
               </div>
 
-              <input
-                type="date"
-                placeholder="Available From"
-                className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                value={availableFrom}
-                onChange={(e) => setAvailableFrom(e.target.value)}
-              />
+             <label className="block text-sm font-medium text-gray-700 mb-1">
+  Available From
+</label>
+<input
+  type="date"
+  placeholder="Available From"
+  className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={availableFrom}
+  onChange={(e) => setAvailableFrom(e.target.value)}
+  min={new Date().toISOString().split("T")[0]} // this disables past dates
+/>
 
-              <input
-                type="time"
+
+
+              {/* <input
+                type="text"
                 placeholder="Gate Closing Time"
                 className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 value={gateClosingTime}
                 onChange={(e) => setGateClosingTime(e.target.value)}
-              />
+              /> */}
             </>
           )}
 
@@ -881,8 +932,8 @@ const PostProperty = () => {
                 type="text"
                 placeholder="Expected Rent (INR)"
                 className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                value={expectedRent}
-                onChange={(e) => setExpectedRent(e.target.value)}
+                value={expectedPrice}
+                onChange={(e) => setExpectedPrice(e.target.value)}
               />
               <input
                 type="text"
@@ -900,8 +951,6 @@ const PostProperty = () => {
               value={availableFrom}
               onChange={(e) => setAvailableFrom(e.target.value)}
             />
-
-            
           </>
         )}
 
@@ -931,8 +980,6 @@ const PostProperty = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-
-            
           </>
         )}
       </div>
@@ -970,6 +1017,30 @@ const PostProperty = () => {
     );
   };
 
+
+  const renderPhoneNumber = () => {
+  return (
+    <div className="mb-6">
+      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+        Enter Mobile Number To Receive Calls <span className="text-red-500">*</span>
+      </label>
+      <input
+        id="phone"
+        type="tel"
+        value={postedByUserPhoneNumber}
+        onChange={(e) => setpostedByUserPhoneNumber(e.target.value)}
+        placeholder="e.g. 9876543210"
+        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+        maxLength={10}
+        required
+      />
+    </div>
+  );
+};
+
+
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-4 lg:py-12">
       <div className="max-w-4xl mx-auto">
@@ -988,6 +1059,7 @@ const PostProperty = () => {
             {renderLocationDetails()}
             {renderPricingDetails()}
             {renderAmenities()}
+            {renderPhoneNumber()}
             {renderPropertyPhotos()}
             <button
               type="submit"

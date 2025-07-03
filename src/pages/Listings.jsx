@@ -14,8 +14,9 @@ const Listing = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const navigate = useNavigate();
-
-  console.log(properties);
+  
+  
+  console.log(properties.postedByUserPhoneNumber);
 
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -453,20 +454,21 @@ const Listing = () => {
                           </div>
                         </div> */}
                         <div className="flex gap-4 mt-2">
-                          <a
-                            href={`tel:${property.brokerPhone || ''}`}
-                            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
-                          >
-                            <Phone className="w-4 h-4 mr-2" />
-                            Call
-                          </a>
-                          <button
-                            onClick={() => handleViewProperty(property.propertyId)}
-                            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-                          >
-                            Details
-                          </button>
-                        </div>
+                          <h1>{property.postedByUserPhoneNumber}</h1>
+  <a
+    href={`tel:${property.postedByUserPhoneNumber || ''}`}
+    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
+  >
+    📞 Call
+  </a>
+  <button
+    onClick={() => handleViewProperty(property.propertyId)}
+    className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
+  >
+    📄 Details
+  </button>
+</div>
+
                       </div>
                     </div>
                   ))}
@@ -530,13 +532,13 @@ const Listing = () => {
                                 ₹{property.expectedPrice}
                               </span>
                               <div className="flex gap-4">
+                                <h1>{property.postedByUserPhoneNumber}</h1>
                                 <a
-                                  href={`tel:${property.brokerPhone || ''}`}
-                                  className="bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105"
-                                >
-                                  <Phone className="w-4 h-4 mr-2" />
-                                  Call
-                                </a>
+    href={`tel:${property.postedByUserPhoneNumber || ''}`}
+    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
+  >
+    📞 Call
+  </a>
                                 <button
                                   onClick={() => handleViewProperty(property.propertyId)}
                                   className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg transform hover:scale-105"

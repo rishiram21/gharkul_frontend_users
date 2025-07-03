@@ -22,6 +22,8 @@ const HomePage = () => {
   const propertyTypes = ['Kharadi', 'Viman Nagar', 'Bhorawadi', 'Baner', 'Balewadi'];
   const tabs = ['Buy', 'Rent', 'Requirement'];
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [featuredProperties, setFeaturedProperties] = useState([]);
+
 
   useEffect(() => {
     const getRequirements = async () => {
@@ -30,6 +32,25 @@ const HomePage = () => {
     };
 
     getRequirements();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/get`, {
+          params: {
+            page: 0,
+            size: 3
+          }
+        });
+        setFeaturedProperties(response.data.content);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      }
+    };
+
+    fetchProperties();
   }, []);
 
   const projects = [
@@ -100,35 +121,35 @@ const HomePage = () => {
     setIsAutoPlaying(true);
   };
 
-  const featuredProperties = [
-    {
-      id: 1,
-      title: '3 BHK in Ganga Constella',
-      location: 'Near Shankar Maharaj Math, Bhorawadi, Pune',
-      image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=250&fit=crop&crop=center',
-      price: '₹85 Lac',
-      type: '3BHK',
-      area: '1250 sq ft'
-    },
-    {
-      id: 2,
-      title: '2 BHK Ganga Ishanya',
-      location: 'Near Shankar Maharaj Math, Bhorawadi, Pune',
-      image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=250&fit=crop&crop=center',
-      price: '₹65 Lac',
-      type: '2BHK',
-      area: '950 sq ft'
-    },
-    {
-      id: 3,
-      title: '3 BHK Lavish Flat',
-      location: 'Near Shankar Maharaj Math, Bhorawadi, Pune',
-      image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&h=250&fit=crop&crop=center',
-      price: '₹95 Lac',
-      type: '3BHK',
-      area: '1400 sq ft'
-    }
-  ];
+  // const featuredProperties = [
+  //   {
+  //     id: 1,
+  //     title: '3 BHK in Ganga Constella',
+  //     location: 'Near Shankar Maharaj Math, Bhorawadi, Pune',
+  //     image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=250&fit=crop&crop=center',
+  //     price: '₹85 Lac',
+  //     type: '3BHK',
+  //     area: '1250 sq ft'
+  //   },
+  //   {
+  //     id: 2,
+  //     title: '2 BHK Ganga Ishanya',
+  //     location: 'Near Shankar Maharaj Math, Bhorawadi, Pune',
+  //     image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=250&fit=crop&crop=center',
+  //     price: '₹65 Lac',
+  //     type: '2BHK',
+  //     area: '950 sq ft'
+  //   },
+  //   {
+  //     id: 3,
+  //     title: '3 BHK Lavish Flat',
+  //     location: 'Near Shankar Maharaj Math, Bhorawadi, Pune',
+  //     image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&h=250&fit=crop&crop=center',
+  //     price: '₹95 Lac',
+  //     type: '3BHK',
+  //     area: '1400 sq ft'
+  //   }
+  // ];
 
   // const requirements = [
   //   {
@@ -348,198 +369,92 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Handpicked Properties Section */}
       <section className="py-8 md:py-12 bg-gradient-to-br from-gray-50 via-blue-50/30 to-white relative overflow-hidden">
-        <div className="relative z-10 w-full px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <h2 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Handpicked Properties
-            </h2>
-            <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
-              Discover premium properties curated by our expert team for the perfect investment opportunity
-            </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mt-4 rounded-full"></div>
+      <div className="relative z-10 w-full px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
           </div>
-          <div className="md:hidden">
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth scrollbar-hide -mx-4 px-4">
-              <style jsx>{`
-                .scrollbar-hide {
-                  -ms-overflow-style: none;
-                  scrollbar-width: none;
-                }
-                .scrollbar-hide::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-              {featuredProperties.map((property, index) => (
-                <Link
-                  key={property.id}
-                  to={`/property/${property.id}`}
-                  className="flex-none w-80 snap-center"
-                >
-                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 group h-[520px] flex flex-col">
-                    <div className="relative h-48 overflow-hidden flex-shrink-0">
-                      <img
-                        src={property.image}
-                        alt={property.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                      <div className="absolute top-4 right-4">
-                        {/* <button className="bg-white/90 backdrop-blur-md p-2 rounded-full hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110">
-                          <Heart className="w-4 h-4 text-red-500 hover:fill-current transition-all duration-300" />
-                        </button> */}
-                      </div>
-                      <div className="absolute bottom-4 left-4">
-                        <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
-                          {property.type || 'Property'}
-                        </span>
-                      </div>
-                      {index < 2 && (
-                        <div className="absolute top-4 left-4">
-                          {/* <span className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
-                            ✨ Featured
-                          </span> */}
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5 flex-1 flex flex-col">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-bold text-base text-gray-800 flex-1 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300 leading-tight">
-                          {property.title || 'Property Title'}
-                        </h3>
-                        <span className="text-blue-600 font-bold text-base ml-3 whitespace-nowrap">
-                          {property.price || 'Price'}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-gray-500 mb-3">
-                        <div className="bg-gray-100 p-1.5 rounded-full mr-2">
-                          <MapPin className="w-3 h-3" />
-                        </div>
-                        <p className="text-sm line-clamp-1">{property.location || 'Location'}</p>
-                      </div>
-                      <div className="bg-gray-50 px-3 py-2 rounded-lg mb-4">
-                        <span className="text-gray-700 text-sm font-medium">{property.area || 'Area'}</span>
-                      </div>
-                      {/* <div className="flex items-center mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                          <span className="text-white text-xs font-bold">
-                            {property.brokerName ? property.brokerName.charAt(0).toUpperCase() : 'B'}
-                          </span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs text-gray-500">Broker</p>
-                          <p className="font-medium text-gray-800 text-xs truncate">
-                            {property.brokerName || 'Broker Name'}
-                          </p>
-                        </div>
-                      </div> */}
-                      <div className="flex gap-3 mt-2">
-                        <a
-                          href={`tel:${property.brokerPhone || property.phone || '0000000000'}`}
-                          className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 px-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-sm font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
-                        >
-                          <Phone className="w-4 h-4 mr-1" />
-                          Call
-                        </a>
-                        <Link
-                          to={`/property/${property.id}`}
-                          className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2.5 px-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-                        >
-                          Details
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            <div className="flex justify-center mt-6 gap-2">
-              {featuredProperties.map((_, index) => (
-                <div key={index} className="w-2 h-2 bg-gray-300 rounded-full"></div>
-              ))}
-            </div>
-          </div>
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProperties.map((property, index) => (
+          <h2 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+            Handpicked Properties
+          </h2>
+          <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
+            Discover premium properties curated by our expert team for the perfect investment opportunity
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mt-4 rounded-full"></div>
+        </div>
+        <div className="md:hidden">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth scrollbar-hide -mx-4 px-4">
+            <style jsx>{`
+              .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+              .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+            {featuredProperties.map((property) => (
               <Link
-                key={property.id}
-                to={`/property/${property.id}`}
-                className="block group"
+                key={property.propertyId}
+                to={`/listing/${property.propertyId}`}
+                className="flex-none w-80 snap-center"
               >
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100 h-[580px] flex flex-col">
-                  <div className="relative h-56 overflow-hidden flex-shrink-0">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 group h-[520px] flex flex-col">
+                  <div className="relative h-48 overflow-hidden flex-shrink-0">
                     <img
-                      src={property.image}
-                      alt={property.title}
+                    src={`${import.meta.env.VITE_BASE_URL}/media/${property.propertyGallery[0]}`}
+                      
+                      alt={property.propertyName}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                    <div className="absolute top-4 right-4">
-                      {/* <button className="bg-white/90 backdrop-blur-md p-2.5 rounded-full hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110">
-                        <Heart className="w-5 h-5 text-red-500 hover:fill-current transition-all duration-300" />
-                      </button> */}
-                    </div>
                     <div className="absolute bottom-4 left-4">
-                      <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
-                        {property.type || 'Property'}
+                      <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
+                        {property.bhkType || 'Property'}
                       </span>
                     </div>
-                    {index < 3 && (
-                      <div className="absolute top-4 left-4">
-                        {/* <span className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold animate-pulse">
-                          ✨ Featured
-                        </span> */}
-                      </div>
-                    )}
                   </div>
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-bold text-lg text-gray-800 flex-1 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300 leading-tight">
-                        {property.title || 'Property Title'}
+                  <div className="p-5 flex-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-bold text-base text-gray-800 flex-1 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300 leading-tight">
+                        {property.propertyName || 'Property Title'}
                       </h3>
-                      <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
-                        {property.price || 'Price'}
+                      <span className="text-blue-600 font-bold text-base ml-3 whitespace-nowrap">
+                        ₹{property.expectedPrice || 'Price'}
                       </span>
+                      {/* <span className="text-blue-600 font-bold text-base ml-3 whitespace-nowrap">
+                        ₹{property.deposit || 'Price'}
+                      </span> */}
                     </div>
-                    <div className="flex items-center text-gray-500 mb-4">
-                      <div className="bg-gray-100 p-2 rounded-full mr-3">
-                        <MapPin className="w-4 h-4" />
+                    <div className="flex items-center text-gray-500 mb-3">
+                      <div className="bg-gray-100 p-1.5 rounded-full mr-2">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                       </div>
-                      <p className="text-base line-clamp-1">{property.location || 'Location'}</p>
+                      <p className="text-sm line-clamp-1">
+                        {`${property.address.area}, ${property.address.city}, ${property.address.state} ${property.address.pinCode}`}
+                      </p>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 rounded-xl mb-5">
-                      <span className="text-gray-700 font-medium">{property.area || 'Area'}</span>
+                    <div className="bg-gray-50 px-3 py-2 rounded-lg mb-4">
+                      <span className="text-gray-700 text-sm font-medium">{property.carpetArea || 'Area'} sq ft</span>
                     </div>
-                    {/* <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <span className="text-white font-bold">
-                          {property.brokerName ? property.brokerName.charAt(0).toUpperCase() : 'B'}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm text-gray-500">Broker</p>
-                        <p className="font-medium text-gray-800 text-sm truncate">
-                          {property.brokerName || 'Broker Name'}
-                        </p>
-                      </div>
-                    </div> */}
-                    <div className="flex gap-4 mt-2">
+                    <div className="flex gap-3 mt-2">
                       <a
-                        href={`tel:${property.brokerPhone || property.phone || '0000000000'}`}
-                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
+                        href={`tel:${property.phone || '0000000000'}`}
+                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 px-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-sm font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
-                        <Phone className="w-4 h-4 mr-2" />
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C3 21 1 19 1 17V7c0-1.105.895-2 2-2z" />
+                        </svg>
                         Call
                       </a>
                       <Link
-                        to={`/property/${property.id}`}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                        to={`/listing/${property.propertyId}`}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2.5 px-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
                         Details
                       </Link>
@@ -549,8 +464,79 @@ const HomePage = () => {
               </Link>
             ))}
           </div>
+          <div className="flex justify-center mt-6 gap-2">
+            {featuredProperties.map((_, index) => (
+              <div key={index} className="w-2 h-2 bg-gray-300 rounded-full"></div>
+            ))}
+          </div>
         </div>
-      </section>
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featuredProperties.map((property) => (
+            <Link
+              key={property.propertyId}
+              to={`/listing/${property.propertyId}`}
+              className="block group"
+            >
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100 h-[580px] flex flex-col">
+                <div className="relative h-56 overflow-hidden flex-shrink-0">
+                  <img
+                    src={`${import.meta.env.VITE_BASE_URL}/media/${property.propertyGallery[0]}`}
+                    alt={property.propertyName}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
+                      {property.bhkType || 'Property'}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-bold text-lg text-gray-800 flex-1 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300 leading-tight">
+                      {property.propertyName || 'Property Title'}
+                    </h3>
+                    <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
+                      ₹{property.deposit || 'Price'}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-gray-500 mb-4">
+                    <div className="bg-gray-100 p-2 rounded-full mr-3">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
+                    <p className="text-base line-clamp-1">
+                      {`${property.address.area}, ${property.address.city}, ${property.address.state} ${property.address.pinCode}`}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 px-4 py-3 rounded-xl mb-5">
+                    <span className="text-gray-700 font-medium">{property.carpetArea || 'Area'} sq ft</span>
+                  </div>
+                  <div className="flex gap-4 mt-2">
+                    <a
+                      href={`tel:${property.phone || '0000000000'}`}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C3 21 1 19 1 17V7c0-1.105.895-2 2-2z" />
+                      </svg>
+                      Call
+                    </a>
+                    <Link
+                      to={`/listing/${property.propertyId}`}
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
 
       {/* Under Construction Projects */}
       <section className="py-6 md:py-8 bg-white">

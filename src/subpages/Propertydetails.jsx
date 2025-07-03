@@ -181,6 +181,7 @@ const PropertyDetails = () => {
                     ))}
                   </div>
                 </div>
+
               </div>
 
               <div className="bg-gray-100 p-6 rounded-lg">
