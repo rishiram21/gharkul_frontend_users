@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
 
     console.log('Token:', token);
     console.log('User Data:', userData);
+    console.log('User Data:', userData);
+
 
     if (token) {
       if (userData && userData !== 'undefined') {

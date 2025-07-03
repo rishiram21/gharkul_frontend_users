@@ -3,7 +3,7 @@ import { MapPin, Heart, Phone, Search, X, SlidersHorizontal, Grid, List } from '
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Listings = () => {
+const Listing = () => {
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +12,10 @@ const Listings = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage] = useState(2);
   const [totalItems, setTotalItems] = useState(0);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  console.log(properties);
 
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -48,7 +51,11 @@ const Listings = () => {
       if (!response.data || !Array.isArray(response.data.content)) {
         throw new Error("Invalid data format received from server");
       }
-      setProperties(response.data.content);
+      const propertiesWithDefaults = response.data.content.map(property => ({
+        ...property,
+        bhkType: property.bhkType || 'ONE_BHK',
+      }));
+      setProperties(propertiesWithDefaults);
       setTotalItems(response.data.totalElements || 0);
     } catch (error) {
       console.error(
@@ -177,7 +184,7 @@ const Listings = () => {
   };
 
   const handleViewProperty = (propertyId) => {
-    navigate(`/property/${propertyId}`);
+    navigate(`/listing/${propertyId}`);
   };
 
   const handleNextPage = () => {
@@ -282,7 +289,7 @@ const Listings = () => {
 
             <div className="space-y-6 overflow-y-auto pr-2 flex-grow pb-4 custom-scrollbar">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Price Range ($)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Price Range (₹)</label>
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <input
@@ -386,12 +393,6 @@ const Listings = () => {
                 </select>
               </div>
             </div>
-
-            <div className="mt-auto pt-4 border-t border-gray-200 md:hidden">
-              <button className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-                Apply Filters
-              </button>
-            </div>
           </div>
         </div>
 
@@ -414,29 +415,11 @@ const Listings = () => {
                             <span className="text-gray-500">No Image Available</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                        <div className="absolute top-4 right-4">
-                          <button
-                            onClick={() => toggleFavorite(property.propertyId)}
-                            className="bg-white/90 backdrop-blur-md p-2.5 rounded-full hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
-                          >
-                            <Heart className={`w-5 h-5 transition-all duration-300 ${
-                              favorites.has(property.propertyId) ? 'text-red-500 fill-red-500' : 'text-red-500 hover:fill-current'
-                            }`} />
-                          </button>
-                        </div>
                         <div className="absolute bottom-4 left-4">
                           <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
-                            {property.bhkType.replace('_', ' ')}
+                            {(property.bhkType || '').replace('_', ' ')}
                           </span>
                         </div>
-                        {index < 2 && (
-                          <div className="absolute top-4 left-4">
-                            <span className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold animate-pulse">
-                              ✨ Featured
-                            </span>
-                          </div>
-                        )}
                       </div>
                       <div className="p-6 flex-1 flex flex-col">
                         <div className="flex justify-between items-start mb-4">
@@ -453,10 +436,10 @@ const Listings = () => {
                           </div>
                           <p className="text-base line-clamp-1">{property.address.city}, {property.address.area}</p>
                         </div>
-                        <div className="bg-gray-50 px-4 py-3 rounded-xl mb-5">
+                        <div className="bg-gray-50 px-4 py-3 rounded-xl">
                           <span className="text-gray-700 font-medium">{property.totalBuildUpArea} sqft</span>
                         </div>
-                        <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                        {/* <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
                           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                             <span className="text-white font-bold">
                               {property.brokerName ? property.brokerName.charAt(0).toUpperCase() : 'B'}
@@ -468,8 +451,8 @@ const Listings = () => {
                               {property.brokerName || 'Unknown'}
                             </p>
                           </div>
-                        </div>
-                        <div className="flex gap-4 mt-auto">
+                        </div> */}
+                        <div className="flex gap-4 mt-2">
                           <a
                             href={`tel:${property.brokerPhone || ''}`}
                             className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -507,19 +490,9 @@ const Listings = () => {
                               <span className="text-gray-500">No Image Available</span>
                             </div>
                           )}
-                          <div className="absolute top-4 right-4">
-                            <button
-                              onClick={() => toggleFavorite(property.propertyId)}
-                              className="bg-white/90 backdrop-blur-md p-2 rounded-full hover:bg-white transition-all duration-300 shadow-md hover:shadow-lg"
-                            >
-                              <Heart className={`w-5 h-5 transition-all duration-300 ${
-                                favorites.has(property.propertyId) ? 'text-red-500 fill-red-500' : 'text-red-500 hover:fill-current'
-                              }`} />
-                            </button>
-                          </div>
                           <div className="absolute bottom-4 left-4">
                             <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg">
-                              {property.bhkType.replace('_', ' ')}
+                              {(property.bhkType || '').replace('_', ' ')}
                             </span>
                           </div>
                         </div>
@@ -621,8 +594,138 @@ const Listings = () => {
           </div>
         </div>
       </div>
+
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+          <div className="bg-white w-80 h-full p-6 overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-800">Filters</h3>
+              <button
+                onClick={() => setIsFilterModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Price Range ($)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    min="0"
+                    className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                    value={filters.priceRange.min}
+                    onChange={(e) => handlePriceRangeChange('min', e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    min="0"
+                    className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                    value={filters.priceRange.max}
+                    onChange={(e) => handlePriceRangeChange('max', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">BHK Type</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                  value={filters.bhkType}
+                  onChange={(e) => handleFilterChange('bhkType', e.target.value)}
+                >
+                  <option value="">All Types</option>
+                  {bhkOptions.map(option => (
+                    <option key={option} value={option}>
+                      {option.replace('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
+                <input
+                  type="text"
+                  placeholder="Enter city"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                  value={filters.city}
+                  onChange={(e) => handleFilterChange('city', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Neighborhood</label>
+                <input
+                  type="text"
+                  placeholder="Enter area"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                  value={filters.area}
+                  onChange={(e) => handleFilterChange('area', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Area Range (sqft)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    min="0"
+                    className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                    value={filters.areaRange.min}
+                    onChange={(e) => handleAreaRangeChange('min', e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    min="0"
+                    className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                    value={filters.areaRange.max}
+                    onChange={(e) => handleAreaRangeChange('max', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                >
+                  {sortOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={clearFilters}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Clear Filters
+                </button>
+                <button
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => setIsFilterModalOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all"
+      >
+        <SlidersHorizontal className="w-6 h-6" />
+      </button>
     </div>
   );
 };
 
-export default Listings;
+export default Listing;

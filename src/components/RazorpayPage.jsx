@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import { AuthContext } from '../context/Authcontext'; // Adjust the import path as needed
 
 const RazorpayPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [paymentStatus, setPaymentStatus] = useState('processing'); // 'processing', 'success', 'failed'
   const [paymentDetails, setPaymentDetails] = useState(null);
+  const { user } = useContext(AuthContext);
+
+  // Extract selectedPlan from location.state
+  const { selectedPlan } = location.state || {};
 
   const loadScript = (src) => {
     return new Promise((resolve) => {
@@ -22,7 +27,7 @@ const RazorpayPage = () => {
     });
   };
 
-  const displayRazorpay = async (amount) => {
+  const displayRazorpay = async (amount, orderId) => {
     const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
 
     if (!res) {
@@ -32,59 +37,143 @@ const RazorpayPage = () => {
 
     const options = {
       key: 'rzp_test_6iRE2VEfQ2p7qE', // Replace with your actual Razorpay key
-      amount: amount * 100, // Amount is in paise (i.e., 1 INR = 100 paise)
+      amount: amount * 100, // Amount is in paise
       currency: 'INR',
       name: 'Gharkul',
       description: 'Payment for Subscription Plan',
       image: 'https://example.com/your_logo', // Replace with your logo URL
+      order_id: orderId, // Use the order ID created by your backend
       handler: function (response) {
-        // Payment successful
+        console.log('Payment handler called:', response);
+        
+        // Immediately close the modal programmatically
+        try {
+          // Try to close the Razorpay modal
+          if (window.Razorpay && window.Razorpay.modal) {
+            window.Razorpay.modal.close();
+          }
+          // Alternative method to close modal
+          const razorpayModal = document.querySelector('.razorpay-container');
+          if (razorpayModal) {
+            razorpayModal.style.display = 'none';
+          }
+        } catch (error) {
+          console.log('Error closing modal:', error);
+        }
+
+        // Payment successful - update UI immediately
         setPaymentStatus('success');
         setPaymentDetails({
           paymentId: response.razorpay_payment_id,
-          amount: amount
+          amount: amount,
         });
-        
-        // Redirect to homepage after a short delay to show success message
-        setTimeout(() => {
-          navigate('/', { 
-            state: { 
-              paymentSuccess: true, 
-              paymentId: response.razorpay_payment_id,
-              amount: amount
-            } 
+
+        // Verify the payment on your backend
+        fetch(`${import.meta.env.VITE_BASE_URL}/api/payment/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature,
+            userId: user.id, // Use the user ID from AuthContext
+            packageId: selectedPlan.planId, // Use the selectedPlan id
+          }),
+        })
+          .then((verifyResponse) => {
+            return verifyResponse.json().then(verifyData => ({
+              ok: verifyResponse.ok,
+              data: verifyData
+            }));
+          })
+          .then(({ ok, data }) => {
+            if (ok) {
+              console.log('Payment verification successful:', data);
+              // Redirect to profile after a short delay to show success message
+              setTimeout(() => {
+                navigate('/profile', {
+                  state: {
+                    paymentSuccess: true,
+                    paymentId: response.razorpay_payment_id,
+                    amount: amount,
+                  },
+                });
+              }, 2000);
+            } else {
+              console.error('Payment verification failed:', data);
+              // Even if verification fails, still redirect but with error state
+              setTimeout(() => {
+                navigate('/profile', {
+                  state: {
+                    paymentSuccess: false,
+                    error: 'Payment verification failed',
+                  },
+                });
+              }, 2000);
+            }
+          })
+          .catch((error) => {
+            console.error('Error verifying payment:', error);
+            // Handle network errors - still redirect with error state
+            setTimeout(() => {
+              navigate('/profile', {
+                state: {
+                  paymentSuccess: false,
+                  error: 'Network error during verification',
+                },
+              });
+            }, 2000);
           });
-        }, 2000);
       },
       modal: {
-        ondismiss: function() {
+        ondismiss: function () {
           // User closed the payment modal without completing payment
+          console.log('Payment modal dismissed by user');
           setPaymentStatus('failed');
           setTimeout(() => {
-            navigate('/');
+            navigate('/profile');
           }, 1500);
-        }
+        },
       },
       prefill: {
-        name: 'Customer Name',
-        email: 'customer@example.com',
-        contact: '9999999999'
+        name: user?.name || '', // Use optional chaining for safety
+        email: user?.email || '', // Use optional chaining for safety
+        contact: user?.contact || '', // Use optional chaining for safety
       },
       notes: {
-        address: 'Razorpay Corporate Office'
+        address: 'Razorpay Corporate Office',
       },
       theme: {
-        color: '#3399cc'
-      }
+        color: '#3399cc',
+      },
     };
 
     const paymentObject = new window.Razorpay(options);
     
-    // Handle payment failure
+    // Store the payment object reference for manual closing
+    window.currentRazorpayInstance = paymentObject;
+    
+    // Add error handling for Razorpay initialization
     paymentObject.on('payment.failed', function (response) {
+      console.error('Payment failed:', response.error);
+      
+      // Try to close the modal
+      try {
+        paymentObject.close();
+      } catch (error) {
+        console.log('Error closing modal on failure:', error);
+      }
+      
       setPaymentStatus('failed');
       setTimeout(() => {
-        navigate('/');
+        navigate('/profile', {
+          state: {
+            paymentSuccess: false,
+            error: response.error.description || 'Payment failed',
+          },
+        });
       }, 2000);
     });
 
@@ -92,14 +181,20 @@ const RazorpayPage = () => {
   };
 
   useEffect(() => {
-    if (location.state && location.state.totalAmount) {
-      const { totalAmount } = location.state;
-      displayRazorpay(totalAmount);
+    // Add validation for required data
+    if (location.state && location.state.totalAmount && location.state.orderId && selectedPlan) {
+      const { totalAmount, orderId } = location.state;
+      displayRazorpay(totalAmount, orderId);
     } else {
-      // No payment amount provided, redirect to home
-      navigate('/');
+      // No payment amount, order ID, or selected plan provided, redirect to profile
+      console.error('Missing required payment data:', {
+        totalAmount: location.state?.totalAmount,
+        orderId: location.state?.orderId,
+        selectedPlan: selectedPlan
+      });
+      navigate('/profile');
     }
-  }, [location, navigate]);
+  }, [location, navigate, selectedPlan]);
 
   const renderContent = () => {
     switch (paymentStatus) {
@@ -136,7 +231,7 @@ const RazorpayPage = () => {
                 </p>
               </div>
             )}
-            <p className="text-sm text-gray-500">Redirecting to homepage...</p>
+            <p className="text-sm text-gray-500">Redirecting to profile...</p>
           </div>
         );
 
@@ -150,7 +245,7 @@ const RazorpayPage = () => {
             <p className="text-gray-600 mb-4">
               Your payment could not be processed. Please try again.
             </p>
-            <p className="text-sm text-gray-500">Redirecting to homepage...</p>
+            <p className="text-sm text-gray-500">Redirecting to profile...</p>
           </div>
         );
 

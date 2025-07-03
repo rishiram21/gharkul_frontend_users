@@ -66,7 +66,7 @@ function App() {
               />
 
               {/* Sub-Pages */}
-              <Route path="/property/:id" element={<Propertydetails />} />
+              <Route path="/listing/:id" element={<Propertydetails />} />
             </Routes>
           </main>
           <Footer />

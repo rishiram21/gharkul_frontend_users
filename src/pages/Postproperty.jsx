@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from '../context/Authcontext'; // Adjust the import path as necessary
+
 
 const PostProperty = () => {
-    const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext); // Access the user from AuthContext
 
+  // State declarations remain the same
   const [enums, setEnums] = useState({
     propertyCategory: [],
     furnishedType: [],
@@ -13,20 +17,22 @@ const PostProperty = () => {
     apartmentType: [],
   });
 
-  useEffect(() => {
+
+ useEffect(() => {
     const fetchEnums = async () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/api/properties/all_enum`
         );
         setEnums(response.data);
-        console.log(response.data); // Check the fetched data
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching enums:", error);
       }
     };
     fetchEnums();
   }, []);
+
 
   const [selectedFiles, setSelectedFiles] = useState([]);
 
@@ -122,9 +128,11 @@ const PostProperty = () => {
 
     const formData = new FormData();
 
-    // Construct the property data object according to the backend's expected format
+    // Use the user ID from the context
+    const userId = user?.userId || 1; // Fallback to 1 if user is not available
+
     const propertyData = {
-      postedByUserId: 1, // Replace with actual user ID from session or context
+      postedByUserId: userId, // Use the user ID from the context
       category: propertyType || "RESIDENTIAL",
       propertyFor: transactionType || "RENT",
       apartmentType: apartmentType || "FLAT",
@@ -136,7 +144,7 @@ const PostProperty = () => {
       carpetArea: parseFloat(carpetArea) || 1,
       address: {
         area: area || "test",
-        city: "Pune", // Replace with actual city from form or context
+        city: "Pune",
         state: state || "test",
         pinCode: pincode || "1",
       },
@@ -153,16 +161,13 @@ const PostProperty = () => {
       preferred_tenants: preferredTenants || "Anyone",
       furnishedType: furnishing || "UNFURNISHED",
       description: description || "test",
-      amenityIds: selectedAmenities, // Ensure no invalid amenity IDs
+      amenityIds: selectedAmenities,
     };
 
-    // Log the property data to check its structure and values
     console.log("Property Data:", propertyData);
 
-    // Append property data as a JSON string
     formData.append("property", JSON.stringify(propertyData));
 
-    // Append images
     selectedFiles.forEach((file) => {
       formData.append("images", file);
     });
@@ -179,8 +184,6 @@ const PostProperty = () => {
       );
       console.log("Property posted successfully:", response.data);
       alert("Property posted successfully!");
-      
-      // Navigate to the Listings page after successful post
       navigate('/listing');
     } catch (error) {
       console.error(
@@ -200,7 +203,7 @@ const PostProperty = () => {
     <div className="mb-6">
       <h2 className="text-xl font-semibold mb-4 flex items-center">
         <span className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3 text-indigo-600 font-bold text-sm">
-          1
+          6
         </span>
         Property Photos
       </h2>
@@ -980,12 +983,12 @@ const PostProperty = () => {
         </div>
         <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
           <form onSubmit={handleSubmit}>
-            {renderPropertyPhotos()}
             {renderBasicSelection()}
             {renderPropertyDetails()}
             {renderLocationDetails()}
             {renderPricingDetails()}
             {renderAmenities()}
+            {renderPropertyPhotos()}
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"

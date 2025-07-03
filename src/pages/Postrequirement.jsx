@@ -43,14 +43,14 @@ function Postrequirement() {
         if (!value) return 'Please enter starting budget';
         const startAmount = parseFloat(value);
         if (isNaN(startAmount) || startAmount <= 0) return 'Please enter a valid amount';
-        if (startAmount < 10000) return 'Minimum budget should be ₹10,000';
+        if (startAmount < 1000) return 'Minimum budget should be ₹1,000';
         return '';
      
       case 'maxBudget':
         if (!value) return 'Please enter maximum budget';
         const endAmount = parseFloat(value);
         if (isNaN(endAmount) || endAmount <= 0) return 'Please enter a valid amount';
-        if (endAmount < 10000) return 'Maximum budget should be ₹10,000';
+        if (endAmount < 5000) return 'Maximum budget should be ₹5,000';
         const startBudget = parseFloat(formData.minBudget);
         if (!isNaN(startBudget) && endAmount <= startBudget) {
           return 'Maximum budget should be greater than starting budget';
@@ -266,23 +266,28 @@ function Postrequirement() {
          
           {/* Row 1: Looking For */}
           <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center">
-              <span className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mr-3 sm:mr-4 text-white font-bold text-sm sm:text-base shadow-lg">1</span>
-              What are you looking for?
-            </h2>
-            <div className="relative">
-              <input
-                type="text"
-                value={formData.lookingFor}
-                onChange={(e) => handleInputChange('lookingFor', e.target.value)}
-                onBlur={() => handleBlur('lookingFor')}
-                placeholder="e.g., Buy, Rent, PG/Co-living, Roommate"
-                className={getInputClasses('lookingFor')}
-              />
-              <SuccessIcon show={touched.lookingFor && !errors.lookingFor && formData.lookingFor} />
-            </div>
-            <ErrorMessage error={errors.lookingFor} />
-          </div>
+  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center">
+    <span className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mr-3 sm:mr-4 text-white font-bold text-sm sm:text-base shadow-lg">1</span>
+    What are you looking for?
+  </h2>
+  <div className="relative">
+    <select
+      value={formData.lookingFor}
+      onChange={(e) => handleInputChange('lookingFor', e.target.value)}
+      onBlur={() => handleBlur('lookingFor')}
+      className={getInputClasses('lookingFor')}
+    >
+      <option value="" disabled>Select an option</option>
+      <option value="Buy">Buy</option>
+      <option value="Rent">Rent</option>
+      <option value="PG/Hostel">PG/Hostel</option>
+      <option value="Roommate">Roommate</option>
+    </select>
+    <SuccessIcon show={touched.lookingFor && !errors.lookingFor && formData.lookingFor} />
+  </div>
+  <ErrorMessage error={errors.lookingFor} />
+</div>
+
  
           {/* Row 2: Property Type & BHK Configuration */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

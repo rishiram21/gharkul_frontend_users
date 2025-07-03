@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { X, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
+import { AuthContext } from '../context/Authcontext'; // Adjust the import path as needed
 
 const CheckoutPage = () => {
   const location = useLocation();
@@ -8,6 +9,10 @@ const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const { user } = useContext(AuthContext);
+
+  console.log(user);
+  console.log(selectedPlan);
 
   useEffect(() => {
     if (location.state && location.state.selectedPlan) {
@@ -17,23 +22,48 @@ const CheckoutPage = () => {
     }
   }, [location, navigate]);
 
-  const handleCheckoutSubmit = async (e) => {
-    e.preventDefault();
-    setIsProcessing(true);
+ const handleCheckoutSubmit = async (e) => {
+  e.preventDefault();
+  setIsProcessing(true);
 
-    // Navigate to Razorpay page with selected plan and total amount
-    const totalAmount = parseInt(selectedPlan.price.replace('₹', '').replace(',', '')) +
-                        Math.round(parseInt(selectedPlan.price.replace('₹', '').replace(',', '')) * 0.18);
+  try {
+    // Create URLSearchParams object to send data as URL-encoded form data
+    const params = new URLSearchParams();
+    params.append('amount', calculateTotalAmount());
+    params.append('currency', 'INR');
+    params.append('userId', user.id);
+    params.append('packageId', selectedPlan.planId);
 
-    navigate('/razorpay', {
-      state: {
-        selectedPlan: selectedPlan,
-        totalAmount: totalAmount,
-      }
+    // Create an order on your backend
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/payment/create-order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
 
-    setIsProcessing(false);
-  };
+    const data = await response.json();
+
+    if (response.ok) {
+      // Navigate to Razorpay page with the order details
+      navigate('/razorpay', {
+        state: {
+          selectedPlan: selectedPlan,
+          totalAmount: calculateTotalAmount(),
+          orderId: data.orderId,
+        },
+      });
+    } else {
+      console.error('Failed to create order:', data);
+    }
+  } catch (error) {
+    console.error('Error creating order:', error);
+  }
+
+  setIsProcessing(false);
+};
+
 
   if (!selectedPlan) {
     return <div>Loading...</div>;
@@ -78,7 +108,7 @@ const CheckoutPage = () => {
 
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${selectedPlan.color} flex items-center justify-center`}>
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${selectedPlan.color || 'bg-gray-200'} flex items-center justify-center`}>
               {/* You can add a static icon or map it based on planId */}
             </div>
             <div className="flex-1">

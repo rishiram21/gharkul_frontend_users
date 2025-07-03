@@ -15,7 +15,7 @@ import { useEffect } from "react";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    accountType: "CUSTOMER", // Default to Customer
+    accountType: "OWNER", // Default to Customer
     firstName: "",
     lastName: "",
     email: "",
@@ -23,10 +23,9 @@ const Signup = () => {
     otp: "",
     address: {
       area: "",
-     
       pinCode: "",
     },
-    agencyNumber: "",
+    // agencyNumber: "",
     reraNumber: "",
   });
 
@@ -37,8 +36,8 @@ const Signup = () => {
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
-      window.scrollTo(0, 0);
-    }, []);
+    window.scrollTo(0, 0);
+  }, []);
 
   // Validate phone number (Indian format)
   const validatePhoneNumber = (phone) => {
@@ -77,16 +76,13 @@ const Signup = () => {
     }
 
     if (!formData.address.area.trim()) newErrors.area = "Area is required";
-    if (!formData.address.state.trim()) newErrors.state = "State is required";
-    if (!formData.address.city.trim()) newErrors.city = "City is required";
-    if (!formData.address.pinCode) { newErrors.pinCode = "Pincode is required";
+    if (!formData.address.pinCode) {
+      newErrors.pinCode = "Pincode is required";
     } else if (!validatePinCode(formData.address.pinCode)) {
       newErrors.pinCode = "Please enter a valid 6-digit pincode";
     }
 
     if (formData.accountType === "Broker") {
-      if (!formData.agencyNumber.trim())
-        newErrors.agencyNumber = "Agency number is required";
       if (!formData.reraNumber.trim())
         newErrors.reraNumber = "RERA number is required";
     }
@@ -102,13 +98,14 @@ const Signup = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/auth/send-registration-otp`,
         {
+          
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           userRole: formData.accountType.toUpperCase(),
           address: formData.address,
-          agencyName: formData.agencyNumber,
+          // agencyName: formData.agencyNumber,
           reraNumber: formData.reraNumber,
         }
       );
@@ -194,17 +191,17 @@ const Signup = () => {
       value = value.replace(/\D/g, "").slice(0, 4);
     }
 
-    if (['area', 'state', 'city', 'pinCode'].includes(field)) {
-    setFormData(prev => ({
-      ...prev,
-      address: {
-        ...prev.address,
-        [field]: value
-      }
-    }));
-  } else {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }
+    if (['area', 'pinCode'].includes(field)) {
+      setFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [field]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -242,9 +239,9 @@ const Signup = () => {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => handleInputChange("accountType", "CUSTOMER")}
+                  onClick={() => handleInputChange("accountType", "OWNER")}
                   className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                    formData.accountType === "CUSTOMER"
+                    formData.accountType === "OWNER"
                       ? "bg-indigo-600 text-white border-2 border-indigo-500"
                       : "bg-white/10 text-white/70 border-2 border-white/20 hover:bg-white/20"
                   }`}
@@ -330,7 +327,7 @@ const Signup = () => {
               )}
             </div>
 
-            {/* phone Number */}
+            {/* Phone Number */}
             <div>
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Phone Number
@@ -361,49 +358,48 @@ const Signup = () => {
 
             {/* Location Information */}
             <div className="grid grid-cols-2 gap-4">
-         <div>
-        <label className="block text-sm font-medium text-white/90 mb-2">
-          Area
-        </label>
-        <input
-          type="text"
-          value={formData.address.area}
-          onChange={(e) => handleInputChange("area", e.target.value)}
-          placeholder="Enter area"
-          className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
-            errors.area ? "border-red-400" : "border-white/30"
-          }`}
-        />
-        {errors.area && (
-          <p className="text-red-400 text-xs mt-1">{errors.area}</p>
-        )}
-      </div>
-      <div>
-    <label className="block text-sm font-medium text-white/90 mb-2">
-      Pincode
-    </label>
-    <input
-      type="text"
-      value={formData.address.pinCode}
-      onChange={(e) => handleInputChange("pinCode", e.target.value)}
-      placeholder="Enter pincode"
-      className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
-        errors.pinCode ? "border-red-400" : "border-white/30"
-      }`}
-    />
-    {errors.pinCode && (
-      <p className="text-red-400 text-xs mt-1">
-        {errors.pinCode}
-      </p>
-    )}
-  </div>
-</div>
-
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  Area
+                </label>
+                <input
+                  type="text"
+                  value={formData.address.area}
+                  onChange={(e) => handleInputChange("area", e.target.value)}
+                  placeholder="Enter area"
+                  className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                    errors.area ? "border-red-400" : "border-white/30"
+                  }`}
+                />
+                {errors.area && (
+                  <p className="text-red-400 text-xs mt-1">{errors.area}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  Pincode
+                </label>
+                <input
+                  type="text"
+                  value={formData.address.pinCode}
+                  onChange={(e) => handleInputChange("pinCode", e.target.value)}
+                  placeholder="Enter pincode"
+                  className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                    errors.pinCode ? "border-red-400" : "border-white/30"
+                  }`}
+                />
+                {errors.pinCode && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {errors.pinCode}
+                  </p>
+                )}
+              </div>
+            </div>
 
             {/* Broker-specific fields */}
             {formData.accountType === "BROKER" && (
               <div className="space-y-4">
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-white/90 mb-2">
                     Agency Number
                   </label>
@@ -423,7 +419,7 @@ const Signup = () => {
                       {errors.agencyNumber}
                     </p>
                   )}
-                </div>
+                </div> */}
                 <div>
                   <label className="block text-sm font-medium text-white/90 mb-2">
                     RERA Number
@@ -583,4 +579,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Signup;
