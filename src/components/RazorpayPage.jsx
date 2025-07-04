@@ -36,7 +36,7 @@ const RazorpayPage = () => {
     }
 
     const options = {
-      key: 'rzp_test_6iRE2VEfQ2p7qE', // Replace with your actual Razorpay key
+      key: 'rzp_live_SzhXfl7yxnVIn1', // Replace with your actual Razorpay key
       amount: amount * 100, // Amount is in paise
       currency: 'INR',
       name: 'Gharkul',
