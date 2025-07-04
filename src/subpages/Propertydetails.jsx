@@ -24,6 +24,8 @@ const PropertyDetails = () => {
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  
+
   useEffect(() => {
     const fetchPropertyDetails = async () => {
       try {
@@ -189,30 +191,18 @@ const PropertyDetails = () => {
 
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-xl text-gray-900">Owner Name</h4>
-                    <div className="flex items-center">
-                      <Star className="h-5 w-5 text-yellow-500 fill-current mr-1" />
-                      <span className="text-gray-700">4.8</span>
-                    </div>
+                    <h4 className="font-medium text-xl text-gray-900">{property.postedByUserName}</h4>
+                    
                   </div>
-                  <div className="flex items-center text-gray-600 mb-4">
-                    <Calendar className="h-5 w-5 mr-1" />
-                    <span>Joined 2023</span>
-                    <span className="mx-2">•</span>
-                    <span>24 reviews</span>
-                  </div>
-                  <p className="text-gray-700 mb-5">Experienced property owner with over 10 years in real estate.</p>
                 </div>
 
                 <div className="space-y-4">
-                  <button className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
-                    <MessageCircle className="h-6 w-6 mr-2" />
-                    Chat with Owner
-                  </button>
-                  <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
-                    <Phone className="h-6 w-6 mr-2" />
-                    Call +91 9876543210
-                  </button>
+                  <a
+    href={`tel:${property.postedByUserPhoneNumber || ''}`}
+    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
+  >
+    📞 Call
+  </a>
                 </div>
               </div>
             </div>

@@ -67,7 +67,7 @@ const PostProperty = () => {
   const [furnishing, setFurnishing] = useState("");
   const [expectedPrice, setExpectedPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [postedByUserPhoneNumber, setpostedByUserPhoneNumber] = useState('');
+  // const [postedByUserPhoneNumber, setpostedByUserPhoneNumber] = useState('');
 
 
   // PG Specific
@@ -171,7 +171,7 @@ const PostProperty = () => {
       furnishedType: furnishing || "UNFURNISHED",
       description: description || "test",
       amenityIds: selectedAmenities,
-      postedByUserPhoneNumber: postedByUserPhoneNumber || "",
+      // postedByUserPhoneNumber: postedByUserPhoneNumber || "",
 
     };
 
@@ -1018,25 +1018,25 @@ const PostProperty = () => {
   };
 
 
-  const renderPhoneNumber = () => {
-  return (
-    <div className="mb-6">
-      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-        Enter Mobile Number To Receive Calls <span className="text-red-500">*</span>
-      </label>
-      <input
-        id="phone"
-        type="tel"
-        value={postedByUserPhoneNumber}
-        onChange={(e) => setpostedByUserPhoneNumber(e.target.value)}
-        placeholder="e.g. 9876543210"
-        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-        maxLength={10}
-        required
-      />
-    </div>
-  );
-};
+//   const renderPhoneNumber = () => {
+//   return (
+//     <div className="mb-6">
+//       <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+//         Enter Mobile Number To Receive Calls <span className="text-red-500">*</span>
+//       </label>
+//       <input
+//         id="phone"
+//         type="tel"
+//         value={postedByUserPhoneNumber}
+//         onChange={(e) => setpostedByUserPhoneNumber(e.target.value)}
+//         placeholder="e.g. 9876543210"
+//         className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+//         maxLength={10}
+//         required
+//       />
+//     </div>
+//   );
+// };
 
 
 
@@ -1059,7 +1059,7 @@ const PostProperty = () => {
             {renderLocationDetails()}
             {renderPricingDetails()}
             {renderAmenities()}
-            {renderPhoneNumber()}
+            {/* {renderPhoneNumber()} */}
             {renderPropertyPhotos()}
             <button
               type="submit"

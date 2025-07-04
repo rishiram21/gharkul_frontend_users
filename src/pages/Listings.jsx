@@ -10,13 +10,11 @@ const Listing = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [favorites, setFavorites] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage] = useState(2);
+  const [itemsPerPage] = useState(4);
   const [totalItems, setTotalItems] = useState(0);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const navigate = useNavigate();
   
-  
-  console.log(properties.postedByUserPhoneNumber);
 
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -440,21 +438,19 @@ const Listing = () => {
                         <div className="bg-gray-50 px-4 py-3 rounded-xl">
                           <span className="text-gray-700 font-medium">{property.totalBuildUpArea} sqft</span>
                         </div>
-                        {/* <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                        <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
                           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                            <span className="text-white font-bold">
-                              {property.brokerName ? property.brokerName.charAt(0).toUpperCase() : 'B'}
-                            </span>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm text-gray-500">Broker</p>
+                            <p className="text-sm text-gray-500">
+                              {property.postedByUserName || 'Unknown'}
+                            </p>
                             <p className="font-medium text-gray-800 text-sm truncate">
-                              {property.brokerName || 'Unknown'}
+                              {property.postedByUserRole || 'Unknown'}
                             </p>
                           </div>
-                        </div> */}
+                        </div>
                         <div className="flex gap-4 mt-2">
-                          <h1>{property.postedByUserPhoneNumber}</h1>
   <a
     href={`tel:${property.postedByUserPhoneNumber || ''}`}
     className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
@@ -513,26 +509,24 @@ const Listing = () => {
                               <div className="bg-gray-50 px-4 py-2 rounded-lg mb-4 inline-block">
                                 <span className="text-gray-700 font-medium">{property.totalBuildUpArea} sqft</span>
                               </div>
-                              <div className="flex items-center mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
-                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                  <span className="text-white font-bold">
-                                    {property.brokerName ? property.brokerName.charAt(0).toUpperCase() : 'B'}
-                                  </span>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm text-gray-500">Broker</p>
-                                  <p className="font-medium text-gray-800 text-sm truncate">
-                                    {property.brokerName || 'Unknown'}
-                                  </p>
-                                </div>
-                              </div>
+                              <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm text-gray-500">
+                              {property.postedByUserName || 'Unknown'}
+                            </p>
+                            <p className="font-medium text-gray-800 text-sm truncate">
+                              {property.postedByUserRole || 'Unknown'}
+                            </p>
+                          </div>
+                        </div>
                             </div>
                             <div className="flex flex-col justify-between items-end">
                               <span className="text-blue-600 font-bold text-xl mb-4">
                                 ₹{property.expectedPrice}
                               </span>
                               <div className="flex gap-4">
-                                <h1>{property.postedByUserPhoneNumber}</h1>
                                 <a
     href={`tel:${property.postedByUserPhoneNumber || ''}`}
     className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
