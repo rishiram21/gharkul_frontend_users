@@ -453,9 +453,9 @@ const Listing = () => {
                         <div className="flex gap-4 mt-2">
   <a
     href={`tel:${property.postedByUserPhoneNumber || ''}`}
-    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
+    className="flex-1 inline-flex items-center justify-center gap-2 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
   >
-    📞 Call
+    <Phone></Phone>Call
   </a>
   <button
     onClick={() => handleViewProperty(property.propertyId)}
