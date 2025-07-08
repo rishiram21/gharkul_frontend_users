@@ -203,10 +203,10 @@ const PropertyDetails = () => {
                     <Bed className="h-6 w-6 mr-2 text-gray-600" />
                     <span className="text-gray-700">{property.bhkType?.split('_')[1]} Bedrooms</span>
                   </div>
-                  <div className="flex items-center">
+                  {/* <div className="flex items-center">
                     <Bath className="h-6 w-6 mr-2 text-gray-600" />
                     <span className="text-gray-700">{property.bathroom || 'N/A'} Bathrooms</span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center">
                     <Square className="h-6 w-6 mr-2 text-gray-600" />
                     <span className="text-gray-700">{property.carpetArea || 'N/A'} sqft</span>

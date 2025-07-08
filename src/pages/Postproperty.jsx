@@ -1283,17 +1283,11 @@ const renderPropertyPhotos = () => (
             {/* {renderPhoneNumber()} */}
             {renderPropertyPhotos()}
             <button
-      type="submit"
-      onClick={handlePost}
-      disabled={clicked}
-      className={`w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold transform transition-all duration-200 shadow-lg ${
-        clicked
-          ? 'opacity-50 cursor-not-allowed'
-          : 'hover:from-indigo-700 hover:to-purple-700 hover:scale-105 hover:shadow-xl'
-      }`}
-    >
-      🏠 Post My Property
-    </button>
+              type="submit"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              🏠 Post My Property
+            </button>
           </form>
         </div>
       </div>
