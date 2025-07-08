@@ -9,8 +9,28 @@ const PostProperty = () => {
   const pinCodeRegex = /^[1-9][0-9]{0,5}$/; // allow partial match while typing
   const [formSubmitted, setFormSubmitted] = useState(false);
 
+  const formatIndianNumber = (value) => {
+  const num = parseFloat(value);
+  if (isNaN(num)) return "";
 
-  console.log(user);
+  if (num >= 1e7) return `${(num / 1e7).toFixed(2)} Cr`;
+  if (num >= 1e5) return `${(num / 1e5).toFixed(2)} L`;
+  if (num >= 1e3) return `${(num / 1e3).toFixed(2)} K`;
+  return num.toString();
+};
+
+
+  const [clicked, setClicked] = useState(false);
+
+  const handlePost = (e) => {
+    e.preventDefault();
+    if (clicked) return;
+
+    setClicked(true);
+
+    // Your form submission logic here
+    console.log("Property posted!");
+  };
 
   // State declarations remain the same
   const [enums, setEnums] = useState({
@@ -352,17 +372,21 @@ const PostProperty = () => {
 
   const handleFileChange = (event) => {
   const files = Array.from(event.target.files);
+  const totalFiles = selectedFiles.length + files.length;
 
-  if (files.length > 4) {
-    alert("You can upload a maximum of 4 images.");
+  if (totalFiles > 8) {
+    alert("You can upload a maximum of 8 images.");
     return;
   }
 
-  setSelectedFiles(files);
+  setSelectedFiles(prevFiles => [...prevFiles, ...files]);
 };
 
+const handleRemoveFile = (index) => {
+  setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+};
 
-  const renderPropertyPhotos = () => (
+const renderPropertyPhotos = () => (
   <div className="mb-6">
     <h2 className="text-xl font-semibold mb-4 flex items-center">
       <span className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3 text-indigo-600 font-bold text-sm">
@@ -370,10 +394,9 @@ const PostProperty = () => {
       </span>
       Property Photos
     </h2>
-
     <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center">
       <p className="mb-2 text-gray-700">
-        Upload 1–4 images (required)
+        Upload 1–8 images (required)
       </p>
       <input
         type="file"
@@ -382,7 +405,6 @@ const PostProperty = () => {
         onChange={handleFileChange}
         className="mb-4"
       />
-
       {selectedFiles.length === 0 ? (
         <div className="flex justify-center mt-4">
           <img
@@ -394,30 +416,37 @@ const PostProperty = () => {
       ) : (
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           {selectedFiles.map((file, index) => (
-            <img
-              key={index}
-              src={URL.createObjectURL(file)}
-              alt={`Selected ${index}`}
-              className="w-32 h-32 object-cover rounded-lg border"
-            />
+            <div key={index} className="relative">
+              <img
+                src={URL.createObjectURL(file)}
+                alt={`Selected ${index}`}
+                className="w-32 h-32 object-cover rounded-lg border"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveFile(index)}
+                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+              >
+                &times;
+              </button>
+            </div>
           ))}
         </div>
       )}
-
       {formSubmitted && selectedFiles.length === 0 && (
         <p className="text-red-600 text-sm mt-2">
           At least one image is required.
         </p>
       )}
-
-      {selectedFiles.length > 4 && (
+      {selectedFiles.length > 8 && (
         <p className="text-red-600 text-sm mt-2">
-          You can only upload up to 4 images.
+          You can only upload up to 8 images.
         </p>
       )}
     </div>
   </div>
 );
+
 
 
   const renderBasicSelection = () => (
@@ -881,29 +910,53 @@ const PostProperty = () => {
             </p>
 
             <div className="flex space-x-3 mb-3">
-              <input
-                type="text"
-                placeholder="Expected Rent (INR)"
-                className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                value={expectedPrice}
-                onChange={(e) => setExpectedPrice(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Expected Deposit (INR)"
-                className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                value={expectedDeposit}
-                onChange={(e) => setExpectedDeposit(e.target.value)}
-              />
-            </div>
+              <div className="w-1/2">
+  <input
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  placeholder="Expected Rent (INR)"
+  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={expectedPrice}
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    setExpectedPrice(value);
+  }}
+/>
 
-            <input
-              type="text"
-              placeholder="Monthly Maintenance (INR)"
-              className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              value={monthlyMaintenance}
-              onChange={(e) => setMonthlyMaintenance(e.target.value)}
-            />
+  <p className="text-sm text-gray-500 mt-1">{formatIndianNumber(expectedPrice)}</p>
+</div>
+
+<div className="w-1/2">
+  <input
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  placeholder="Expected Deposit (INR)"
+  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={expectedDeposit}
+  onChange={(e) =>
+    setExpectedDeposit(e.target.value.replace(/\D/g, '')) // Only digits
+  }
+/>
+  <p className="text-sm text-gray-500 mt-1">{formatIndianNumber(expectedDeposit)}</p>
+</div>
+</div>
+
+            <div className="w-full">
+  <input
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  placeholder="Monthly Maintenance (INR)"
+  className="w-full p-3 border border-gray-300 rounded-xl mb-1 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+  value={monthlyMaintenance}
+  onChange={(e) =>
+    setMonthlyMaintenance(e.target.value.replace(/\D/g, '')) // Only digits
+  }
+/>
+  <p className="text-sm text-gray-500">{formatIndianNumber(monthlyMaintenance)}</p>
+</div>
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
   Available From
@@ -1230,11 +1283,17 @@ const PostProperty = () => {
             {/* {renderPhoneNumber()} */}
             {renderPropertyPhotos()}
             <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              🏠 Post My Property
-            </button>
+      type="submit"
+      onClick={handlePost}
+      disabled={clicked}
+      className={`w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold transform transition-all duration-200 shadow-lg ${
+        clicked
+          ? 'opacity-50 cursor-not-allowed'
+          : 'hover:from-indigo-700 hover:to-purple-700 hover:scale-105 hover:shadow-xl'
+      }`}
+    >
+      🏠 Post My Property
+    </button>
           </form>
         </div>
       </div>
