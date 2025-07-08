@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { MapPin, Bed, Bath, Square, Heart, ChevronLeft, ChevronRight, MessageCircle, Phone, Star, Calendar, Wifi, Car, Dumbbell, Shield } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Navigation } from 'swiper/modules';
 
 const fetchPropertyById = async (id) => {
   try {
@@ -23,6 +27,10 @@ const PropertyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
 
   
 
@@ -117,12 +125,12 @@ const PropertyDetails = () => {
               </div>
             )}
           </div> */}
-          <div className="relative h-56 overflow-hidden flex-shrink-0">
+          {/* <div className="relative h-full w-full overflow-hidden flex-shrink-0">
             {property.propertyGallery && property.propertyGallery.length > 0 ? (
               <img
                 src={`${import.meta.env.VITE_BASE_URL}/media/${property.propertyGallery[0]}`}
                 alt={property.propertyName}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
               />
             ) : (
               <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -134,7 +142,45 @@ const PropertyDetails = () => {
                 {(property.bhkType || '').replace('_', ' ')}
               </span>
             </div>
+          </div> */}
+
+          <div className="relative w-full max-w-4xl mx-auto">
+  {property.propertyGallery && property.propertyGallery.length > 0 ? (
+    <Swiper
+      modules={[Navigation]}
+      navigation
+      spaceBetween={10}
+      slidesPerView={1}
+      loop={true}
+      className="rounded-xl shadow-md"
+    >
+      {property.propertyGallery.map((img, index) => (
+        <SwiperSlide key={index}>
+          <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden">
+            <img
+              src={`${import.meta.env.VITE_BASE_URL}/media/${img}`}
+              alt={`Property Image ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            {/* BHK label - show only on first image or all */}
+            {index === 0 && (
+              <div className="absolute bottom-4 left-4">
+                <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
+                  {(property.bhkType || '').replace('_', ' ')}
+                </span>
+              </div>
+            )}
           </div>
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  ) : (
+    <div className="w-full h-64 bg-gray-200 flex items-center justify-center rounded-lg">
+      <span className="text-gray-500">No Images Available</span>
+    </div>
+  )}
+</div>
+
 
           <div className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -199,9 +245,9 @@ const PropertyDetails = () => {
                 <div className="space-y-4">
                   <a
     href={`tel:${property.postedByUserPhoneNumber || ''}`}
-    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
+    className="flex-1 inline-flex items-center justify-center gap-2 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
   >
-    📞 Call
+    <Phone></Phone>Call
   </a>
                 </div>
               </div>

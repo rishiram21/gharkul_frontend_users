@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { MapPin, Heart, Phone, Search, X, SlidersHorizontal, Grid, List } from 'lucide-react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Listing = () => {
   const [properties, setProperties] = useState([]);
@@ -14,10 +14,10 @@ const Listing = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const navigate = useNavigate();
-  
 
+  const location = useLocation();
   const [filters, setFilters] = useState({
-    searchTerm: '',
+    searchTerm: location.state?.searchTerm || '',
     priceRange: { min: '', max: '' },
     bhkType: '',
     city: '',
@@ -25,6 +25,27 @@ const Listing = () => {
     areaRange: { min: '', max: '' },
     sortBy: 'newest'
   });
+
+  useEffect(() => {
+    if (location.state?.searchTerm) {
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        searchTerm: location.state.searchTerm
+      }));
+    }
+  }, [location.state]);
+
+  
+
+  // const [filters, setFilters] = useState({
+  //   searchTerm: '',
+  //   priceRange: { min: '', max: '' },
+  //   bhkType: '',
+  //   city: '',
+  //   area: '',
+  //   areaRange: { min: '', max: '' },
+  //   sortBy: 'newest'
+  // });
 
   const bhkOptions = ['ONE_BHK', 'TWO_BHK', 'THREE_BHK', 'FOUR_BHK', 'FIVE_BHK'];
   const sortOptions = [
@@ -232,7 +253,6 @@ const Listing = () => {
               </h1>
               <p className="text-gray-600">{filteredProperties.length} properties found</p>
             </div>
-
             <div className="flex-1 max-w-md">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />

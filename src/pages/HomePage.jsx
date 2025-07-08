@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Search, Star, Phone, MessageCircle, Share2, MapPin, Home, Building, Users, Filter, Menu, X, ChevronLeft, ChevronRight, Calendar, ChartArea } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from "../context/Authcontext";
 
@@ -28,6 +28,9 @@ const HomePage = () => {
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { user } = useContext(AuthContext);
+
+
+
   // Navigation functions
 const prevSlide = () => {
   setCurrentSlide((prev) => (prev === 0 ? requirements.length - 1 : prev - 1));
@@ -40,6 +43,36 @@ const nextSlide = () => {
 const goToSlide = (index) => {
   setCurrentSlide(index);
 };
+
+
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = () => {
+    navigate('/listing', { state: { searchTerm } });
+  };
+
+
+  const formatPrice = (price) => {
+  if (price >= 10000000) return `${(price / 10000000).toFixed(price % 10000000 === 0 ? 0 : 1)}Cr`;
+  if (price >= 100000) return `${(price / 100000).toFixed(price % 100000 === 0 ? 0 : 1)}L`;
+  if (price >= 1000) return `${(price / 1000).toFixed(price % 1000 === 0 ? 0 : 1)}k`;
+  return price;
+};
+
+
+const formatBHK = (bhkEnum) => {
+  if (!bhkEnum) return 'BHK';
+
+  const bhkLabel = bhkEnum
+    .replace('BHK_', '')       // Remove the prefix
+    .replace('_', '.')         // Replace underscore with decimal
+    .replace('_', '.');        // In case of multiple underscores (safe fallback)
+
+  return `${bhkLabel} BHK`;
+};
+
+
 
 
   // const handleCallClick = async () => {
@@ -329,55 +362,19 @@ const goToSlide = (index) => {
                 type="text"
                 placeholder="Search Properties, Requirements..."
                 className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 border border-gray-200 rounded-lg text-sm md:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
-          {/* Tabs */}
-          <div className="flex justify-center mb-4 md:mb-6">
-            <div className="bg-white rounded-lg p-1 flex shadow-sm">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 md:px-6 py-2 rounded-md font-medium transition-colors text-sm md:text-base ${
-                    activeTab === tab
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* Property Type Filters */}
-          {/* <div className="flex justify-center mb-4 md:mb-6">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {propertyTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setActivePropertyType(type)}
-                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full border font-medium transition-colors text-xs md:text-sm ${
-                    activePropertyType === type
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-blue-300'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div> */}
           {/* Search Button */}
           <div className="text-center">
-           <Link
-  to="/listing"
-  className="inline-block bg-blue-500 text-white px-8 md:px-12 py-2.5 md:py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm md:text-base shadow-md text-center"
->
-  Search
-</Link>
-
-
+            <button
+              onClick={handleSearch}
+              className="inline-block bg-blue-500 text-white px-8 md:px-12 py-2.5 md:py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm md:text-base shadow-md text-center"
+            >
+              Search
+            </button>
           </div>
         </div>
       </section>
@@ -420,54 +417,81 @@ const goToSlide = (index) => {
                         <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                           <Users className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          {/* <span className={`relative px-2 py-1 rounded text-xs font-medium inline-block mt-1 md:mt-0 w-fit ${getStatusColor(req.status)}`}>
-                              {req.status}
-                            </span> */}
-                          <div className="flex flex-col md:flex-row md:items-center md:space-x-2 mb-2">
-                            <h3 className="font-semibold text-gray-800 text-sm md:text-base">{req.propertyType}</h3>
-                            <h3 className="font-semibold text-gray-800 text-sm md:text-base">{req.lookingFor}</h3>
-                            
-                          </div>
-                          <div className="flex flex-wrap gap-1.5 md:gap-2 mb-2">
-                            {req.preferredLocations.map((location, idx) => (
-                              <span key={idx} className="bg-blue-500 text-white px-3 md:px-3 py-3 rounded text-xs md:text-sm">
-                                {location}
-                              </span>
-                            ))}
-                          </div>
-                          
-                          <p className="text-gray-600 mb-4 text-sm md:text-base">
-                            {req.additionalRequirements}
-                          </p>
-                          <p className="mb-2">
-                          <div className="flex gap-4 mt-4">
-  {/* Call Button */}
-  <a
+                        <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-3xl mx-auto space-y-4">
+  {/* Status Badge */}
+  <div>
+    <span
+      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${
+        req.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"
+      }`}
+    >
+      {req.status}
+    </span>
+  </div>
+
+  {/* Property Information */}
+  <div className="space-y-1">
+    <h2 className="text-xl font-bold text-gray-800 capitalize">
+      {req.propertyType} for {req.lookingFor}
+    </h2>
+    <p className="text-sm text-gray-600 font-medium">BHK Configuration: {req.bhkConfig}</p>
+    <p className="text-sm text-gray-600 font-medium">
+      Budget: ₹{req.minBudget.toLocaleString()} - ₹{req.maxBudget.toLocaleString()}
+    </p>
+  </div>
+
+  {/* Preferred Locations */}
+  <div>
+    <h3 className="text-sm text-gray-700 font-semibold mb-2">Preferred Locations:</h3>
+    <div className="flex flex-wrap gap-2">
+      {req.preferredLocations.map((location, idx) => (
+        <span
+          key={idx}
+          className="bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs md:text-sm"
+        >
+          {location}
+        </span>
+      ))}
+    </div>
+  </div>
+
+  {/* Additional Requirements */}
+  <div>
+    <h3 className="text-sm text-gray-700 font-semibold mb-1">Additional Requirements:</h3>
+    <p className="text-gray-600 text-sm">{req.additionalRequirements}</p>
+  </div>
+
+  {/* Contact Buttons */}
+  <div className="flex gap-4 pt-2">
+    {/* Call Button */}
+    <a
       href={user ? `tel:${req.phoneNumber}` : "#"}
       onClick={handleClick}
-      className={`inline-flex items-center justify-center gap-2 ${
+      className={`inline-flex items-center gap-2 ${
         user ? "bg-blue-700 hover:bg-blue-800 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
-      } text-white text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-md transition-all duration-200 ${
+      } text-white text-sm font-medium py-2 px-4 rounded-full shadow-md transition duration-200 ${
         user ? "hover:scale-105" : ""
       }`}
     >
       <Phone size={18} /> Call
     </a>
 
-  {/* WhatsApp Button */}
-  {/* <a
-    href={`https://wa.me/${req.phoneNumber}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition"
-  >
-    <MessageCircle></MessageCircle>WhatsApp
-  </a> */}
+    {/* WhatsApp Button */}
+    <a
+      href={user ? `https://wa.me/${req.phoneNumber}` : "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex items-center gap-2 ${
+        user ? "bg-emerald-500 hover:bg-emerald-600" : "bg-gray-400 cursor-not-allowed"
+      } text-white text-sm font-medium py-2 px-4 rounded-full shadow-md transition duration-200 ${
+        user ? "hover:scale-105" : ""
+      }`}
+    >
+      <MessageCircle size={18} /> WhatsApp
+    </a>
+  </div>
 </div>
 
-                        </p>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -538,7 +562,7 @@ const goToSlide = (index) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                 <div className="absolute bottom-4 left-4">
                   <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
-                    {property.bhkType || 'Property'}
+                    {formatBHK(property.bhkType) || 'Property'}
                   </span>
                 </div>
               </div>
@@ -548,7 +572,7 @@ const goToSlide = (index) => {
                     {property.propertyName || 'Property Title'}
                   </h3>
                   <span className="text-blue-600 font-bold text-base ml-3 whitespace-nowrap">
-                    ₹{property.expectedPrice || 'Price'}
+                    ₹{formatPrice(property.expectedPrice) || 'Price'}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-500 mb-3">
@@ -558,7 +582,7 @@ const goToSlide = (index) => {
                     </svg>
                   </div>
                   <p className="text-sm line-clamp-1">
-                    {`${property.address.area}, ${property.address.city}, ${property.address.state} ${property.address.pinCode}`}
+                    {`${property.address.area}, ${property.address.city}, ${property.address.state} - ${property.address.pinCode}`}
                   </p>
                 </div>
                 <div className="bg-gray-50 px-3 py-2 rounded-lg mb-4">
@@ -584,12 +608,12 @@ const goToSlide = (index) => {
                   >
                     <Phone></Phone>Call
                   </a>
-                  <Link
+                  {/* <Link
                     to={`/listing/${property.propertyId}`}
                     className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 px-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     Details
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>
@@ -619,7 +643,7 @@ const goToSlide = (index) => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
               <div className="absolute bottom-4 left-4">
                 <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
-                  {property.bhkType || 'Property'}
+                  {formatBHK(property.bhkType) || 'Property'}
                 </span>
               </div>
             </div>
@@ -629,7 +653,7 @@ const goToSlide = (index) => {
                   {property.propertyName || 'Property Title'}
                 </h3>
                 <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
-                  ₹{property.expectedPrice || 'Price'}
+                  ₹{formatPrice(property.expectedPrice) || 'Price'}
                 </span>
               </div>
               <div className="flex items-center text-gray-500">
@@ -725,7 +749,7 @@ const goToSlide = (index) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                 <div className="absolute bottom-4 left-4">
                   <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
-                    {property.bhkType || 'Property'}
+                    {formatBHK(property.bhkType) || 'Property'}
                   </span>
                 </div>
               </div>
@@ -735,7 +759,7 @@ const goToSlide = (index) => {
                     {property.propertyName || 'Property Title'}
                   </h3>
                   <span className="text-blue-600 font-bold text-base ml-3 whitespace-nowrap">
-                    ₹{property.expectedPrice || 'Price'}
+                    ₹{formatPrice(property.expectedPrice) || 'Price'}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-500 mb-3">
@@ -806,7 +830,7 @@ const goToSlide = (index) => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
               <div className="absolute bottom-4 left-4">
                 <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
-                  {property.bhkType || 'Property'}
+                  {formatBHK(property.bhkType) || 'Property'}
                 </span>
               </div>
             </div>
@@ -816,7 +840,7 @@ const goToSlide = (index) => {
                   {property.propertyName || 'Property Title'}
                 </h3>
                 <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
-                  ₹{property.expectedPrice || 'Price'}
+                  ₹{formatPrice(property.expectedPrice) || 'Price'}
                 </span>
               </div>
               <div className="flex items-center text-gray-500 mb-2">

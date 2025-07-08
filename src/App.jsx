@@ -18,6 +18,7 @@ import UserProfile from './pages/UserProfile';
 import CheckoutPage from './pages/CheckoutPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import RazorpayPage from './components/RazorpayPage'; // Import the RazorpayPage component
+import Editdetails from './subpages/Editdetails';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = React.useContext(AuthContext);
@@ -67,6 +68,10 @@ function App() {
 
               {/* Sub-Pages */}
               <Route path="/listing/:id" element={<Propertydetails />} />
+
+              <Route path="/editproperty/:id" element={<Editdetails />} />
+              
+              
             </Routes>
           </main>
           <Footer />

@@ -6,7 +6,7 @@ import {
   MapPin, Building, CreditCard, LogOut, ChevronRight, Star,
   Plus, Filter, Search, Eye, Download, Upload
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const UserProfile = () => {
   const { user, isAuthenticated, logout } = useContext(AuthContext);
@@ -34,7 +34,59 @@ const UserProfile = () => {
     fetchRequirements();
   }, [user]);
 
+
+  const navigate = useNavigate();
+
+const [showModal, setShowModal] = useState(false);
+
+  const handleDelete = async (confirmed = false) => {
+    try {
+      const url = new URL(`${import.meta.env.VITE_BASE_URL}/api/auth/delete-user/${user.id}`);
+      if (confirmed) {
+        url.searchParams.append('confirmed', 'true');
+      }
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.text();
+
+      if (!confirmed) {
+        setShowModal(true);
+      } else {
+        alert('✅ Your account has been deleted successfully.');
+        navigate("/signin");
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('❌ Failed to delete the account. Please try again later.');
+    }
+  };
+
+  const confirmDelete = async () => {
+    setShowModal(false);
+    await handleDelete(true);
+  };
+
+  const cancelDelete = () => {
+    setShowModal(false);
+  };
+
+
   const [properties, setProperties] = useState([]);
+
+  
+
+  const handleEdit = (property) => {
+    
+    navigate(`/editproperty/${property.propertyId}`);
+  };
+
+
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -131,7 +183,7 @@ const UserProfile = () => {
 ];
 
 
-  const mockProperties = user?.properties || [];
+  // const mockProperties = user?.properties || [];
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -227,6 +279,13 @@ const UserProfile = () => {
                 <p className="text-sm text-gray-600">
                   <strong>Furnished Type:</strong> {property.furnishedType}
                 </p>
+
+                {/* <button
+      onClick={() => handleEdit(property)}
+      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+    >
+      Edit
+    </button> */}
               </div>
             </div>
           </div>
@@ -367,7 +426,41 @@ const UserProfile = () => {
             <p className="text-gray-900">{user.address.street}</p>
             <p className="text-gray-600">{user.address.area} - {user.address.pinCode}</p>
           </div>
+          <div className="mt-8 text-center">
+      <button
+        onClick={() => handleDelete(false)}
+        className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
+      >
+        Delete Account
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Do you really want to delete this account?</h2>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg"
+              >
+                No
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
         </div>
+      )}
+    </div>
+
+        </div>
+        
+
+        
       )}
     </div>
   );
