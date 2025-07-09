@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { MapPin, Heart, Phone, Search, X, SlidersHorizontal, Grid, List } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { AuthContext } from "../context/Authcontext";
+
 
 const Listing = () => {
   const [properties, setProperties] = useState([]);
@@ -14,6 +16,8 @@ const Listing = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  
 
   const location = useLocation();
   const [filters, setFilters] = useState({
@@ -35,7 +39,12 @@ const Listing = () => {
     }
   }, [location.state]);
 
-  
+  const handleClick = (e) => {
+    if (!user) {
+      e.preventDefault();
+      alert("Please log in to make a call or message.");
+    }
+  };
 
   // const [filters, setFilters] = useState({
   //   searchTerm: '',
@@ -95,12 +104,20 @@ const Listing = () => {
     let filtered = [...properties];
 
     if (filters.searchTerm) {
-      filtered = filtered.filter(property =>
-        property.propertyName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        property.address.city.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        property.address.area.toLowerCase().includes(filters.searchTerm.toLowerCase())
-      );
-    }
+  const searchTermLower = filters.searchTerm.toLowerCase();
+
+  filtered = filtered.filter((property) => {
+    const propertyForDisplay = property.propertyFor.toUpperCase() === "BUY" ? "SELL" : property.propertyFor;
+
+    return (
+      property.propertyName.toLowerCase().includes(searchTermLower) ||
+      property.address.city.toLowerCase().includes(searchTermLower) ||
+      property.address.area.toLowerCase().includes(searchTermLower) ||
+      propertyForDisplay.toLowerCase().includes(searchTermLower)
+    );
+  });
+}
+
 
     if (filters.priceRange.min) {
       filtered = filtered.filter(property => property.expectedPrice >= parseInt(filters.priceRange.min));
@@ -444,10 +461,18 @@ const Listing = () => {
                         <div className="flex justify-between items-start mb-4">
                           <h3 className="font-bold text-lg text-gray-800 flex-1 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300 leading-tight">
                             {property.propertyName}
+
                           </h3>
                           <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
                             ₹{property.expectedPrice}
                           </span>
+                        </div>
+                        <div>
+                          <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
+                            Property For : {property.propertyFor}
+                          </span>
+                            
+                        
                         </div>
                         <div className="flex items-center text-gray-500 mb-4">
                           <div className="bg-gray-100 p-2 rounded-full mr-3">
@@ -473,6 +498,7 @@ const Listing = () => {
                         <div className="flex gap-4 mt-2">
   <a
     href={`tel:${property.postedByUserPhoneNumber || ''}`}
+    onClick={handleClick}
     className="flex-1 inline-flex items-center justify-center gap-2 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
   >
     <Phone></Phone>Call

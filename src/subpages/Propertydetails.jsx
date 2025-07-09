@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { MapPin, Bed, Bath, Square, Heart, ChevronLeft, ChevronRight, MessageCircle, Phone, Star, Calendar, Wifi, Car, Dumbbell, Shield } from 'lucide-react';
@@ -6,6 +6,8 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
+import { AuthContext } from "../context/Authcontext";
+
 
 const fetchPropertyById = async (id) => {
   try {
@@ -27,10 +29,57 @@ const PropertyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { user } = useContext(AuthContext);
+  
 
   useEffect(() => {
       window.scrollTo(0, 0);
     }, []);
+
+
+  const handleClick = (e) => {
+    if (!user) {
+      e.preventDefault();
+      alert("Please log in to make a call or message.");
+    }
+  };
+
+  const handleCallClick = async (event, property) => {
+    event.preventDefault();
+
+    if (!user) {
+      alert("You must be logged in to make a call.");
+      return;
+    }
+
+    if (!property || !property.postedByUserId) {
+      console.error("Property or postedByUserId is undefined");
+      return;
+    }
+
+
+  try {
+    // Make an API call to the backend endpoint
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`,
+      null,
+      {
+        params: {
+          userId: property.postedByUserId, // Ensure this is the correct user ID
+          propertyId: property.propertyId, // Use the property ID from the property object
+        },
+      }
+    );
+
+    console.log(response.data); // Log the response data
+
+    // Redirect to the phone call or show a success message
+    window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
+  } catch (error) {
+    console.error("Error accessing contact:", error);
+    // Optionally, show an error message to the user
+  }
+};
 
   
 
@@ -245,6 +294,8 @@ const PropertyDetails = () => {
                 <div className="space-y-4">
                   <a
     href={`tel:${property.postedByUserPhoneNumber || ''}`}
+    onClick={(event) => handleCallClick(event, property)}
+
     className="flex-1 inline-flex items-center justify-center gap-2 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
   >
     <Phone></Phone>Call

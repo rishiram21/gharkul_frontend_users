@@ -280,7 +280,7 @@ const PostProperty = () => {
     try {
       alert("No images uploaded. Attaching default image...");
 
-      const response = await fetch("/default-image.jpg"); // Ensure this image exists in /public
+      const response = await fetch("/defaul.jpg"); // Ensure this image exists in /public
       const blob = await response.blob();
       const defaultFile = new File([blob], "default-image.jpg", { type: blob.type });
       formData.append("images", defaultFile);
