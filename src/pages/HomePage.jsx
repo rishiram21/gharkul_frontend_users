@@ -3,8 +3,7 @@ import { Search, Star, Phone, MessageCircle, Share2, MapPin, Home, Building, Use
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from "../context/Authcontext";
-
-
+import { toast } from 'react-toastify';
 
   const fetchRequirements = async () => {
   try {
@@ -22,14 +21,14 @@ const HomePage = () => {
   const [activePropertyType, setActivePropertyType] = useState('Kharadi');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // const [currentSlide, setCurrentSlide] = useState(0);
-  const propertyTypes = ['Kharadi', 'Viman Nagar', 'Bhorawadi', 'Baner', 'Balewadi'];
-  const tabs = ['Buy', 'Rent', 'Requirement'];
+  // const propertyTypes = ['Kharadi', 'Viman Nagar', 'Bhorawadi', 'Baner', 'Balewadi'];
+  // const tabs = ['Buy', 'Rent', 'Requirement'];
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { user } = useContext(AuthContext);
-
-  console.log(requirements);
+  const [transactionType, setTransactionType] = useState('');
+  const [selectedLocations, setSelectedLocations] = useState([]);
 
   // Navigation functions
 const prevSlide = () => {
@@ -49,8 +48,27 @@ const goToSlide = (index) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearch = () => {
-    navigate('/listing', { state: { searchTerm } });
+    // Navigate to the listing page with the search filters as state
+    navigate('/listing', {
+      state: {
+        searchTerm,
+        transactionType,
+        selectedLocations,
+      },
+    });
   };
+
+  const toggleLocation = (location) => {
+    setSelectedLocations((prevSelected) =>
+      prevSelected.includes(location)
+        ? prevSelected.filter((loc) => loc !== location)
+        : [...prevSelected, location]
+    );
+  };
+
+  // const handleSearch = () => {
+  //   navigate('/listing', { state: { searchTerm } });
+  // };
 
 
   const formatPrice = (price) => {
@@ -75,25 +93,25 @@ const formatBHK = (bhkEnum) => {
 
 
 
-  const handleCallClick = async () => {
-    try {
-      // Make an API call to the backend endpoint
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`, null, {
-        params: {
-          userId: property.postedByUserId, // Replace with the actual user ID
-          propertyId: property.propertyId // Use the property ID from the property object
-        }
-      });
+  // const handleCallClick = async () => {
+  //   try {
+  //     // Make an API call to the backend endpoint
+  //     const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`, null, {
+  //       params: {
+  //         userId: property.postedByUserId, // Replace with the actual user ID
+  //         propertyId: property.propertyId // Use the property ID from the property object
+  //       }
+  //     });
 
-      console.log(response.data); // Log the response data
+  //     console.log(response.data); // Log the response data
 
-      // Optionally, you can redirect to the phone call or show a success message
-      window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
-    } catch (error) {
-      console.error('Error accessing contact:', error);
-      // Optionally, show an error message to the user
-    }
-  };
+  //     // Optionally, you can redirect to the phone call or show a success message
+  //     window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
+  //   } catch (error) {
+  //     console.error('Error accessing contact:', error);
+  //     // Optionally, show an error message to the user
+  //   }
+  // };
 
 
 
@@ -136,7 +154,7 @@ const formatBHK = (bhkEnum) => {
 //       null,
 //       {
 //         params: {
-//           userId: property.postedByUserId, // Ensure this is the correct user ID
+//           userId: user.id, // Ensure this is the correct user ID
 //           propertyId: property.propertyId, // Use the property ID from the property object
 //         },
 //       }
@@ -151,6 +169,41 @@ const formatBHK = (bhkEnum) => {
 //     // Optionally, show an error message to the user
 //   }
 // };
+
+
+const handleCallClick = async (event, property) => {
+  event.preventDefault();
+
+  if (!user) {
+    toast.error("You must be logged in to make a call.");
+    return;
+  }
+
+  if (!property || !property.postedByUserId) {
+    toast.error("Invalid property details.");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`,
+      null,
+      {
+        params: {
+          userId: user.id,
+          propertyId: property.propertyId,
+        },
+      }
+    );
+
+    toast.success("Calling agent...");
+    window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
+  } catch (error) {
+    console.error("Error accessing contact:", error);
+    toast.error("Something went wrong while accessing contact.");
+  }
+};
+
 
 
 
@@ -364,58 +417,62 @@ const formatBHK = (bhkEnum) => {
     <div className="min-h-screen bg-white">
       {/* Search Section */}
 <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-4 md:py-8">
-  <div className="w-full px-3 md:px-6 lg:px-8">
-    
-    {/* Search Bar */}
-    <div className="mb-4 md:mb-6">
-      <div className="relative max-w-2xl mx-auto">
-        <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
-        <input
-          type="text"
-          placeholder="Search Properties, Requirements..."
-          className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 border border-gray-200 rounded-lg text-sm md:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="w-full px-3 md:px-6 lg:px-8">
+        {/* Search Bar */}
+        <div className="mb-4 md:mb-6">
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
+            <input
+              type="text"
+              placeholder="Search Properties, Requirements..."
+              className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 border border-gray-200 rounded-lg text-sm md:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Transaction Type Buttons */}
+        <div className="flex justify-center gap-3 flex-wrap mb-6">
+          {["RENT", "BUY"].map((option) => (
+            <button
+              key={option}
+              onClick={() => setTransactionType(option)}
+              className={`px-4 py-1.5 bg-blue-500 border border-gray-300 rounded-full shadow-sm hover:bg-blue-300 transition text-sm md:text-base ${
+                transactionType === option ? 'bg-indigo-900 text-white' : ''
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+
+        {/* Location Buttons */}
+        <div className="flex justify-center gap-3 flex-wrap mb-6">
+          {["Bibwewadi", "Baner", "Kothrud", "Kharadi", "Wakad"].map((location) => (
+            <button
+              key={location}
+              onClick={() => toggleLocation(location)}
+              className={`px-4 py-1.5 bg-blue-500 border border-gray-300 rounded-full shadow-sm hover:bg-blue-300 transition text-sm md:text-base ${
+                selectedLocations.includes(location) ? 'bg-indigo-900 text-white' : ''
+              }`}
+            >
+              {location}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Button */}
+        <div className="text-center">
+          <button
+            onClick={handleSearch}
+            className="inline-block bg-blue-500 text-white px-8 md:px-12 py-2.5 md:py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm md:text-base shadow-md text-center"
+          >
+            Search
+          </button>
+        </div>
       </div>
-    </div>
-
-    {/* options Buttons */}
-    <div className="flex justify-center gap-3 flex-wrap mb-6">
-      {["RENT","BUY"].map((option) => (
-        <button
-          key={option}
-          onClick={() => setSearchTerm(option)}
-          className="px-4 py-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-blue-100 transition text-sm md:text-base"
-        >
-          {option}
-        </button>
-      ))}
-    </div>
-    {/* Location Buttons */}
-    <div className="flex justify-center gap-3 flex-wrap mb-6">
-      {["Bibwewadi", "Baner", "Kothrud", "Kharadi", "Wakad"].map((location) => (
-        <button
-          key={location}
-          onClick={() => setSearchTerm(location)}
-          className="px-4 py-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-blue-100 transition text-sm md:text-base"
-        >
-          {location}
-        </button>
-      ))}
-    </div>
-
-    {/* Search Button */}
-    <div className="text-center">
-      <button
-        onClick={handleSearch}
-        className="inline-block bg-blue-500 text-white px-8 md:px-12 py-2.5 md:py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm md:text-base shadow-md text-center"
-      >
-        Search
-      </button>
-    </div>
-  </div>
-</section>
+    </section>
 
 
       {/* Featured Requirements Section */}

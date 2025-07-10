@@ -20,6 +20,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import RazorpayPage from './components/RazorpayPage'; // Import the RazorpayPage component
 import Editdetails from './subpages/Editdetails';
 
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = React.useContext(AuthContext);
   return isAuthenticated ? children : <Navigate to="/signin" />;
