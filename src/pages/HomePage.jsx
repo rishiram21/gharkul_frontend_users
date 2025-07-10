@@ -75,25 +75,25 @@ const formatBHK = (bhkEnum) => {
 
 
 
-  // const handleCallClick = async () => {
-  //   try {
-  //     // Make an API call to the backend endpoint
-  //     const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`, null, {
-  //       params: {
-  //         userId: property.postedByUserId, // Replace with the actual user ID
-  //         propertyId: property.propertyId // Use the property ID from the property object
-  //       }
-  //     });
+  const handleCallClick = async () => {
+    try {
+      // Make an API call to the backend endpoint
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`, null, {
+        params: {
+          userId: property.postedByUserId, // Replace with the actual user ID
+          propertyId: property.propertyId // Use the property ID from the property object
+        }
+      });
 
-  //     console.log(response.data); // Log the response data
+      console.log(response.data); // Log the response data
 
-  //     // Optionally, you can redirect to the phone call or show a success message
-  //     window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
-  //   } catch (error) {
-  //     console.error('Error accessing contact:', error);
-  //     // Optionally, show an error message to the user
-  //   }
-  // };
+      // Optionally, you can redirect to the phone call or show a success message
+      window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
+    } catch (error) {
+      console.error('Error accessing contact:', error);
+      // Optionally, show an error message to the user
+    }
+  };
 
 
 
@@ -115,42 +115,42 @@ const formatBHK = (bhkEnum) => {
     }
   };
 
-  const handleCallClick = async (event, property) => {
-    event.preventDefault();
+//   const handleCallClick = async (event, property) => {
+//     event.preventDefault();
 
-    if (!user) {
-      alert("You must be logged in to make a call.");
-      return;
-    }
+//     if (!user) {
+//       alert("You must be logged in to make a call.");
+//       return;
+//     }
 
-    if (!property || !property.postedByUserId) {
-      console.error("Property or postedByUserId is undefined");
-      return;
-    }
+//     if (!property || !property.postedByUserId) {
+//       console.error("Property or postedByUserId is undefined");
+//       return;
+//     }
 
 
-  try {
-    // Make an API call to the backend endpoint
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`,
-      null,
-      {
-        params: {
-          userId: property.postedByUserId, // Ensure this is the correct user ID
-          propertyId: property.propertyId, // Use the property ID from the property object
-        },
-      }
-    );
+//   try {
+//     // Make an API call to the backend endpoint
+//     const response = await axios.post(
+//       `${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`,
+//       null,
+//       {
+//         params: {
+//           userId: property.postedByUserId, // Ensure this is the correct user ID
+//           propertyId: property.propertyId, // Use the property ID from the property object
+//         },
+//       }
+//     );
 
-    console.log(response.data); // Log the response data
+//     console.log(response.data); // Log the response data
 
-    // Redirect to the phone call or show a success message
-    window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
-  } catch (error) {
-    console.error("Error accessing contact:", error);
-    // Optionally, show an error message to the user
-  }
-};
+//     // Redirect to the phone call or show a success message
+//     window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
+//   } catch (error) {
+//     console.error("Error accessing contact:", error);
+//     // Optionally, show an error message to the user
+//   }
+// };
 
 
 

@@ -521,7 +521,7 @@ const Signup = () => {
                 </div>
 
                 {/* Resend OTP */}
-                <h3 className='text-white text-center'>Default OTP - 1234</h3>
+                {/* <h3 className='text-white text-center'>Default OTP - 1234</h3> */}
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-white/70">Didn't receive OTP?</span>
                   {countdown > 0 ? (
