@@ -47,6 +47,8 @@ const PropertyDetails = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  
+
   const handleCallClick = async (event) => {
     event.preventDefault();
     if (!user) {
@@ -59,7 +61,7 @@ const PropertyDetails = () => {
         null,
         {
           params: {
-            userId: property.postedByUserId,
+            userId: user.id,
             propertyId: property.propertyId,
           },
         }
@@ -132,14 +134,21 @@ const PropertyDetails = () => {
     );
   }
 
+  // const formatPrice = (price) => {
+  //   if (!price) return 'Price not specified';
+  //   return new Intl.NumberFormat('en-IN', {
+  //     style: 'currency',
+  //     currency: 'INR',
+  //     maximumFractionDigits: 0
+  //   }).format(price);
+  // };
+
   const formatPrice = (price) => {
-    if (!price) return 'Price not specified';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(price);
-  };
+  if (price >= 10000000) return `${(price / 10000000).toFixed(price % 10000000 === 0 ? 0 : 1)}Cr`;
+  if (price >= 100000) return `${(price / 100000).toFixed(price % 100000 === 0 ? 0 : 1)}L`;
+  if (price >= 1000) return `${(price / 1000).toFixed(price % 1000 === 0 ? 0 : 1)}k`;
+  return price;
+};
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not specified';
@@ -226,7 +235,7 @@ const PropertyDetails = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-indigo-600 mb-1">
-                    {formatPrice(property.expectedPrice)}
+                    ₹{formatPrice(property.expectedPrice)}
                   </div>
                   <div className="text-sm text-gray-500">
                     {property.propertyFor === 'RENT' ? 'Monthly Rent' : 'Total Price'}
@@ -326,7 +335,7 @@ const PropertyDetails = () => {
                   </div>
                 </div>
 
-                {property.postedByUserPhoneNumber && (
+                {/* {property.postedByUserPhoneNumber && (
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <Phone className="w-5 h-5 text-green-600" />
@@ -336,7 +345,7 @@ const PropertyDetails = () => {
                       <div className="text-sm text-gray-500">Phone Number</div>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
 
               <div className="border-t pt-4">
@@ -344,18 +353,18 @@ const PropertyDetails = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Expected Price</span>
-                    <span className="font-semibold text-gray-900">{formatPrice(property.expectedPrice)}</span>
+                    <span className="font-semibold text-gray-900">₹{formatPrice(property.expectedPrice)}</span>
                   </div>
                   {property.deposit && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Security Deposit</span>
-                      <span className="font-semibold text-gray-900">{formatPrice(property.deposit)}</span>
+                      <span className="font-semibold text-gray-900">₹{formatPrice(property.deposit)}</span>
                     </div>
                   )}
                   {property.monthlyMaintenance && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Monthly Maintenance</span>
-                      <span className="font-semibold text-gray-900">{formatPrice(property.monthlyMaintenance)}</span>
+                      <span className="font-semibold text-gray-900">₹{formatPrice(property.monthlyMaintenance)}</span>
                     </div>
                   )}
                 </div>

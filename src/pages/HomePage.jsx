@@ -416,61 +416,117 @@ const handleCallClick = async (event, property) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Search Section */}
-<section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-4 md:py-8">
-      <div className="w-full px-3 md:px-6 lg:px-8">
-        {/* Search Bar */}
-        <div className="mb-4 md:mb-6">
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
-            <input
-              type="text"
-              placeholder="Search Properties, Requirements..."
-              className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 border border-gray-200 rounded-lg text-sm md:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+<section className="relative bg-gradient-to-br from-blue-50 via-blue-60 to-blue-70 py-12 md:py-16 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent"></div>
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative w-full max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8 md:mb-12">
+          <div className="flex justify-center items-center gap-2 mb-4">
+            <Home className="w-8 h-8 text-black" />
+            <h1 className="text-3xl md:text-4xl font-bold text-black">Find Your Dream Property</h1>
+          </div>
+          {/* <p className="text-blue-100 text-lg md:text-xl max-w-2xl mx-auto">
+            Discover the perfect home in Pune's most desirable neighborhoods
+          </p> */}
+        </div>
+
+        {/* Search Container */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 border border-white/20">
+          
+          {/* Search Bar */}
+          <div className="mb-6 md:mb-8">
+            <div className="relative max-w-3xl mx-auto">
+              <Search className="absolute left-4 md:left-5 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5 md:w-6 md:h-6" />
+              <input
+                type="text"
+                placeholder="Search by property type, location, or requirements..."
+                className="w-full pl-12 md:pl-14 pr-6 py-4 md:py-5 border-2 border-blue-100 rounded-xl text-base md:text-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 bg-white/80 backdrop-blur-sm placeholder-gray-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Transaction Type */}
+          <div className="mb-6 md:mb-8">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">Transaction Type</h3>
+            <div className="flex justify-center gap-4">
+              {["RENT", "BUY"].map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setTransactionType(option)}
+                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                    transactionType === option 
+                      ? 'bg-blue-600 text-white shadow-blue-200' 
+                      : 'bg-white text-blue-600 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Location Selection */}
+          <div className="mb-8 md:mb-10">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center flex items-center justify-center gap-2">
+              <MapPin className="w-5 h-5 text-blue-500" />
+              Select Preferred Locations
+            </h3>
+            <div className="flex justify-center gap-3 flex-wrap max-w-4xl mx-auto">
+              {["Bibwewadi", "Baner", "Kothrud", "Kharadi", "Wakad"].map((location) => (
+                <button
+                  key={location}
+                  onClick={() => toggleLocation(location)}
+                  className={`px-6 py-3 rounded-full font-medium transition-all duration-200 text-sm md:text-base shadow-md hover:shadow-lg transform hover:scale-105 ${
+                    selectedLocations.includes(location) 
+                      ? 'bg-blue-600 text-white shadow-blue-200' 
+                      : 'bg-white text-blue-600 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  {location}
+                </button>
+              ))}
+            </div>
+            {selectedLocations.length > 0 && (
+              <p className="text-center text-blue-600 mt-3 text-sm">
+                {selectedLocations.length} location{selectedLocations.length > 1 ? 's' : ''} selected
+              </p>
+            )}
+          </div>
+
+          {/* Search Button */}
+          <div className="text-center">
+            <button
+              onClick={handleSearch}
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-12 md:px-16 py-4 md:py-5 rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-base md:text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            >
+              <Search className="w-5 h-5" />
+              Search Properties
+            </button>
           </div>
         </div>
 
-        {/* Transaction Type Buttons */}
-        <div className="flex justify-center gap-3 flex-wrap mb-6">
-          {["RENT", "BUY"].map((option) => (
-            <button
-              key={option}
-              onClick={() => setTransactionType(option)}
-              className={`px-4 py-1.5 bg-blue-500 border border-gray-300 rounded-full shadow-sm hover:bg-blue-300 transition text-sm md:text-base ${
-                transactionType === option ? 'bg-indigo-900 text-white' : ''
-              }`}
-            >
-              {option}
-            </button>
+        {/* Quick Stats */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 md:mt-12">
+          {[
+            { label: "Properties Available", value: "1,200+", icon: Home },
+            { label: "Verified Listings", value: "100%", icon: Search },
+            { label: "Locations Covered", value: "25+", icon: MapPin }
+          ].map((stat, index) => (
+            <div key={index} className="bg-white/20 backdrop-blur-sm rounded-xl p-6 text-center border border-white/30">
+              <stat.icon className="w-8 h-8 text-white mx-auto mb-2" />
+              <div className="text-2xl font-bold text-white">{stat.value}</div>
+              <div className="text-blue-100 text-sm">{stat.label}</div>
+            </div>
           ))}
-        </div>
-
-        {/* Location Buttons */}
-        <div className="flex justify-center gap-3 flex-wrap mb-6">
-          {["Bibwewadi", "Baner", "Kothrud", "Kharadi", "Wakad"].map((location) => (
-            <button
-              key={location}
-              onClick={() => toggleLocation(location)}
-              className={`px-4 py-1.5 bg-blue-500 border border-gray-300 rounded-full shadow-sm hover:bg-blue-300 transition text-sm md:text-base ${
-                selectedLocations.includes(location) ? 'bg-indigo-900 text-white' : ''
-              }`}
-            >
-              {location}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Button */}
-        <div className="text-center">
-          <button
-            onClick={handleSearch}
-            className="inline-block bg-blue-500 text-white px-8 md:px-12 py-2.5 md:py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm md:text-base shadow-md text-center"
-          >
-            Search
-          </button>
-        </div>
+        </div> */}
       </div>
     </section>
 

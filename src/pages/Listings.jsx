@@ -3,6 +3,8 @@ import { MapPin, Heart, Phone, Search, X, SlidersHorizontal, Grid, List } from '
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from "../context/Authcontext";
+import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 
 const Listing = () => {
@@ -29,6 +31,14 @@ const Listing = () => {
     areaRange: { min: '', max: '' },
     sortBy: 'newest'
   });
+  
+  const formatPrice = (price) => {
+  if (price >= 10000000) return `${(price / 10000000).toFixed(price % 10000000 === 0 ? 0 : 1)}Cr`;
+  if (price >= 100000) return `${(price / 100000).toFixed(price % 100000 === 0 ? 0 : 1)}L`;
+  if (price >= 1000) return `${(price / 1000).toFixed(price % 1000 === 0 ? 0 : 1)}k`;
+  return price;
+};
+
 
   useEffect(() => {
     if (location.state?.searchTerm) {
@@ -45,6 +55,50 @@ const Listing = () => {
       alert("Please log in to make a call or message.");
     }
   };
+
+  const formatBHK = (bhkEnum) => {
+  if (!bhkEnum) return 'BHK';
+
+  const bhkLabel = bhkEnum
+    .replace('BHK_', '')       // Remove the prefix
+    .replace('_', '.')         // Replace underscore with decimal
+    .replace('_', '.');        // In case of multiple underscores (safe fallback)
+
+  return `${bhkLabel} BHK`;
+};
+
+  const handleCallClick = async (event, property) => {
+  event.preventDefault();
+
+  if (!user) {
+    toast.error("You must be logged in to make a call.");
+    return;
+  }
+
+  if (!property || !property.postedByUserId) {
+    toast.error("Invalid property details.");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/subscriptions/use-contact-or-chat`,
+      null,
+      {
+        params: {
+          userId: user.id,
+          propertyId: property.propertyId,
+        },
+      }
+    );
+
+    toast.success("Calling agent...");
+    window.location.href = `tel:${property.postedByUserPhoneNumber || ''}`;
+  } catch (error) {
+    console.error("Error accessing contact:", error);
+    toast.error("Something went wrong while accessing contact.");
+  }
+};
 
   // const [filters, setFilters] = useState({
   //   searchTerm: '',
@@ -438,7 +492,11 @@ const Listing = () => {
               {viewMode === 'grid' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {filteredProperties.map((property, index) => (
-                    <div key={property.propertyId} className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-white/20 group h-[580px] flex flex-col">
+                    <Link
+            key={property.propertyId}
+            to={`/listing/${property.propertyId}`}
+          >
+                    <div key={property.propertyId} className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-white/20 group h-[480px] flex flex-col">
                       <div className="relative h-56 overflow-hidden flex-shrink-0">
                         {property.propertyGallery && property.propertyGallery.length > 0 ? (
                           <img
@@ -452,8 +510,13 @@ const Listing = () => {
                           </div>
                         )}
                         <div className="absolute bottom-4 left-4">
+<span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm">
+                    {formatBHK(property.bhkType) || 'Property'}
+                  </span>
+                        </div>
+                        <div className="absolute bottom-4 right-4">
                           <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
-                            {(property.bhkType || '').replace('_', ' ')}
+                            {(property.propertyFor || '').replace('_', ' ')}
                           </span>
                         </div>
                       </div>
@@ -463,29 +526,36 @@ const Listing = () => {
                             {property.propertyName}
 
                           </h3>
-                          <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
-                            ₹{property.expectedPrice}
-                          </span>
+                          <span className="text-blue-600 font-bold text-base ml-3 whitespace-nowrap">
+                    ₹{formatPrice(property.expectedPrice) || 'Price'}
+                  </span>
                         </div>
-                        <div>
+                        {/* <div>
                           <span className="text-blue-600 font-bold text-lg ml-4 whitespace-nowrap">
                             Property For : {property.propertyFor}
                           </span>
                             
                         
-                        </div>
+                        </div> */}
+
+                       
                         <div className="flex items-center text-gray-500 mb-4">
                           <div className="bg-gray-100 p-2 rounded-full mr-3">
                             <MapPin className="w-4 h-4" />
                           </div>
-                          <p className="text-base line-clamp-1">{property.address.city}, {property.address.area}</p>
+                          <p className="text-base line-clamp-1">                  {`${property.address.area}, ${property.address.city}, ${property.address.state} ${property.address.pinCode}`}
+</p>
                         </div>
-                        <div className="bg-gray-50 px-4 py-3 rounded-xl">
+                        <div className="bg-gray-50 px-4 py-3 rounded-xl mb-2">
                           <span className="text-gray-700 font-medium">{property.totalBuildUpArea} sqft</span>
                         </div>
-                        <div className="flex items-center mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                        <div className="flex items-center justify-between mb-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                          {/* Avatar or Icon */}
                           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            {/* Add icon inside if needed */}
                           </div>
+                        
+                          {/* User Info */}
                           <div className="min-w-0 flex-1">
                             <p className="text-sm text-gray-500">
                               {property.postedByUserName || 'Unknown'}
@@ -494,25 +564,42 @@ const Listing = () => {
                               {property.postedByUserRole || 'Unknown'}
                             </p>
                           </div>
+                        
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 ml-4">
+                            {/* Call Button */}
+                            <a
+                              href="#"
+                              onClick={(event) => handleCallClick(event, property)}
+                              className="flex items-center gap-1 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105 text-sm"
+                            >
+                              <Phone className="w-4 h-4" /> 
+                            </a>
+                        
+                            {/* WhatsApp Button */}
+                            <a
+                              href={`https://wa.me/${property.phoneNumber}`}
+                              onClick={(event) => handleCallClick(event, property)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105 text-sm"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M20.52 3.48A11.84 11.84 0 0 0 12 0C5.37 0 0 5.37 0 12a11.86 11.86 0 0 0 1.59 5.96L0 24l6.27-1.64A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.2-3.48-8.52zm-8.5 17.49a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.72.97.99-3.63-.23-.37A9.92 9.92 0 0 1 2.1 12c0-5.46 4.44-9.9 9.9-9.9 2.65 0 5.14 1.04 7.02 2.93a9.87 9.87 0 0 1 2.9 7.01c0 5.46-4.44 9.9-9.9 9.9zm5.39-7.43c-.29-.14-1.7-.84-1.96-.94-.26-.1-.45-.14-.64.14-.19.28-.74.94-.91 1.14-.17.2-.34.21-.63.07-.29-.14-1.23-.46-2.34-1.48-.86-.76-1.44-1.7-1.6-1.99-.17-.29-.02-.44.13-.58.13-.13.29-.34.43-.5.14-.17.19-.28.29-.47.1-.2.05-.37-.02-.51-.07-.14-.64-1.54-.88-2.11-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.35s-1 1-1 2.43 1.02 2.81 1.16 3.01c.14.2 2 3.2 4.86 4.49.68.29 1.21.46 1.62.59.68.21 1.3.18 1.78.11.54-.08 1.7-.7 1.94-1.37.24-.68.24-1.26.17-1.37-.07-.11-.26-.18-.55-.32z"/>
+                              </svg>
+                              
+                            </a>
+                          </div>
                         </div>
-                        <div className="flex gap-4 mt-2">
-  <a
-    href={`tel:${property.postedByUserPhoneNumber || ''}`}
-    onClick={handleClick}
-    className="flex-1 inline-flex items-center justify-center gap-2 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
-  >
-    <Phone></Phone>Call
-  </a>
-  <button
-    onClick={() => handleViewProperty(property.propertyId)}
-    className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
-  >
-    📄 Details
-  </button>
-</div>
 
                       </div>
                     </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -520,6 +607,10 @@ const Listing = () => {
               {viewMode === 'list' && (
                 <div className="space-y-6">
                   {filteredProperties.map((property) => (
+                    <Link
+            key={property.propertyId}
+            to={`/listing/${property.propertyId}`}
+          >
                     <div key={property.propertyId} className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-white/20 group">
                       <div className="flex">
                         <div className="relative w-80 flex-shrink-0">
@@ -527,7 +618,7 @@ const Listing = () => {
                             <img
                               src={`${import.meta.env.VITE_BASE_URL}/media/${property.propertyGallery[0]}`}
                               alt={property.propertyName}
-                              className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                              className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           ) : (
                             <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
@@ -539,6 +630,11 @@ const Listing = () => {
                               {(property.bhkType || '').replace('_', ' ')}
                             </span>
                           </div>
+                          <div className="absolute bottom-4 right-4">
+                          <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
+                            {(property.propertyFor || '').replace('_', ' ')}
+                          </span>
+                        </div>
                         </div>
                         <div className="flex-1 p-6">
                           <div className="flex justify-between items-start h-full">
@@ -550,7 +646,8 @@ const Listing = () => {
                                 <div className="bg-gray-100 p-2 rounded-full mr-3">
                                   <MapPin className="w-4 h-4" />
                                 </div>
-                                <span className="text-base">{property.address.city}, {property.address.area}</span>
+                                <span className="text-base">{`${property.address.area}, ${property.address.city}, ${property.address.state} ${property.address.pinCode}`}
+</span>
                               </div>
                               <div className="bg-gray-50 px-4 py-2 rounded-lg mb-4 inline-block">
                                 <span className="text-gray-700 font-medium">{property.totalBuildUpArea} sqft</span>
@@ -572,25 +669,41 @@ const Listing = () => {
                               <span className="text-blue-600 font-bold text-xl mb-4">
                                 ₹{property.expectedPrice}
                               </span>
-                              <div className="flex gap-4">
-                                <a
-    href={`tel:${property.postedByUserPhoneNumber || ''}`}
-    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105"
-  >
-    📞 Call
-  </a>
-                                <button
-                                  onClick={() => handleViewProperty(property.propertyId)}
-                                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg transform hover:scale-105"
-                                >
-                                  Details
-                                </button>
-                              </div>
+                               <div className="flex gap-2 ml-4">
+                                  {/* Call Button */}
+                                  <a
+                                    href="#"
+                                    onClick={(event) => handleCallClick(event, property)}
+                                    className="flex items-center gap-1 bg-cyan-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105 text-sm"
+                                  >
+                                    <Phone className="w-4 h-4" /> 
+                                  </a>
+                              
+                                  {/* WhatsApp Button */}
+                                  <a
+                                    href={`https://wa.me/${property.phoneNumber}`}
+                                    onClick={(event) => handleCallClick(event, property)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-xl shadow-lg transition hover:shadow-xl transform hover:scale-105 text-sm"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="w-4 h-4"
+                                      fill="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path d="M20.52 3.48A11.84 11.84 0 0 0 12 0C5.37 0 0 5.37 0 12a11.86 11.86 0 0 0 1.59 5.96L0 24l6.27-1.64A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.2-3.48-8.52zm-8.5 17.49a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.72.97.99-3.63-.23-.37A9.92 9.92 0 0 1 2.1 12c0-5.46 4.44-9.9 9.9-9.9 2.65 0 5.14 1.04 7.02 2.93a9.87 9.87 0 0 1 2.9 7.01c0 5.46-4.44 9.9-9.9 9.9zm5.39-7.43c-.29-.14-1.7-.84-1.96-.94-.26-.1-.45-.14-.64.14-.19.28-.74.94-.91 1.14-.17.2-.34.21-.63.07-.29-.14-1.23-.46-2.34-1.48-.86-.76-1.44-1.7-1.6-1.99-.17-.29-.02-.44.13-.58.13-.13.29-.34.43-.5.14-.17.19-.28.29-.47.1-.2.05-.37-.02-.51-.07-.14-.64-1.54-.88-2.11-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.35s-1 1-1 2.43 1.02 2.81 1.16 3.01c.14.2 2 3.2 4.86 4.49.68.29 1.21.46 1.62.59.68.21 1.3.18 1.78.11.54-.08 1.7-.7 1.94-1.37.24-.68.24-1.26.17-1.37-.07-.11-.26-.18-.55-.32z"/>
+                                    </svg>
+                                    
+                                  </a>
+                                </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -651,7 +764,7 @@ const Listing = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Price Range ($)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Price Range (₹)</label>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -762,7 +875,7 @@ const Listing = () => {
 
       <button
         onClick={() => setIsFilterModalOpen(true)}
-        className="md:hidden fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all"
+        className="md:hidden fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-50"
       >
         <SlidersHorizontal className="w-6 h-6" />
       </button>
