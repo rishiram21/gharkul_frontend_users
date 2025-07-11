@@ -217,23 +217,41 @@ const handleCallClick = async (event, property) => {
   }, []);
 
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/get`, {
-          params: {
-            page: 0,
-            size: 3
-          }
-        });
-        setFeaturedProperties(response.data.content);
-      } catch (error) {
-        console.error('Error fetching properties:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchProperties = async () => {
+  //     try {
+  //       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/get`, {
+  //         params: {
+  //           page: 0,
+  //           size: 3
+  //         }
+  //       });
+  //       setFeaturedProperties(response.data.content);
+  //     } catch (error) {
+  //       console.error('Error fetching properties:', error);
+  //     }
+  //   };
 
-    fetchProperties();
-  }, []);
+  //   fetchProperties();
+  // }, []);
+
+
+  useEffect(() => {
+  const fetchProperties = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/get`);
+      
+      // Get first 3 properties as featured
+      const topThree = (response.data || []).slice(0, 3);
+      setFeaturedProperties(topThree);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    }
+  };
+
+  fetchProperties();
+}, []);
+
 
   const projects = [
     {
@@ -428,7 +446,7 @@ const handleCallClick = async (event, property) => {
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
           <div className="flex justify-center items-center gap-2 mb-4">
-            <Home className="w-8 h-8 text-black" />
+            <Home className="w-8 h-8 text-white" />
             <h1 className="text-3xl md:text-4xl font-bold text-black">Find Your Dream Property</h1>
           </div>
           {/* <p className="text-blue-100 text-lg md:text-xl max-w-2xl mx-auto">

@@ -272,7 +272,7 @@ const PostProperty = () => {
     amenityIds: selectedAmenities || [],
   };
 
-  console.log("Property Data:", propertyData);
+  // console.log("Property Data:", propertyData);
   formData.append("property", JSON.stringify(propertyData));
 
   // ✅ Image validation
@@ -280,9 +280,9 @@ const PostProperty = () => {
     try {
       alert("No images uploaded. Attaching default image...");
 
-      const response = await fetch("/default.jpg"); // Ensure this image exists in /public
+      const response = await fetch("/default.png"); // Ensure this image exists in /public
       const blob = await response.blob();
-      const defaultFile = new File([blob], "default.jpg", { type: blob.type });
+      const defaultFile = new File([blob], "default.png", { type: blob.type });
       formData.append("images", defaultFile);
     } catch (error) {
       console.error("Failed to load default image:", error);
@@ -408,7 +408,7 @@ const renderPropertyPhotos = () => (
       {selectedFiles.length === 0 ? (
         <div className="flex justify-center mt-4">
           <img
-            src="/default.jpg"
+            src="/default.png"
             alt="Default"
             className="w-40 h-40 object-cover rounded-lg border"
           />

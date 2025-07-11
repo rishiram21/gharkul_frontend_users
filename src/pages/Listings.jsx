@@ -120,35 +120,33 @@ const Listing = () => {
   ];
 
   const fetchProperties = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/properties/get`,
-        {
-          params: {
-            page: currentPage,
-            size: itemsPerPage,
-          },
-        }
-      );
-      if (!response.data || !Array.isArray(response.data.content)) {
-        throw new Error("Invalid data format received from server");
-      }
-      const propertiesWithDefaults = response.data.content.map(property => ({
-        ...property,
-        bhkType: property.bhkType || 'ONE_BHK',
-      }));
-      setProperties(propertiesWithDefaults);
-      setTotalItems(response.data.totalElements || 0);
-    } catch (error) {
-      console.error(
-        "Error fetching properties:",
-        error.response ? error.response.data : error.message
-      );
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/api/properties/get`
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data format received from server");
     }
-  }, [currentPage, itemsPerPage]);
+
+    const propertiesWithDefaults = response.data.map(property => ({
+      ...property,
+      bhkType: property.bhkType || 'ONE_BHK',
+    }));
+
+    setProperties(propertiesWithDefaults);
+    setTotalItems(propertiesWithDefaults.length); // Optional: if still using totalItems elsewhere
+  } catch (error) {
+    console.error(
+      "Error fetching properties:",
+      error.response ? error.response.data : error.message
+    );
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
 
   useEffect(() => {
     fetchProperties();
@@ -618,7 +616,7 @@ const Listing = () => {
                             <img
                               src={`${import.meta.env.VITE_BASE_URL}/media/${property.propertyGallery[0]}`}
                               alt={property.propertyName}
-                              className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-105"
+                              className="w-full h-72 object-contain transition-transform duration-500 group-hover:scale-105"
                             />
                           ) : (
                             <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
@@ -723,7 +721,7 @@ const Listing = () => {
               </button>
             </div>
           )}
-          <div className="flex justify-between items-center mt-8">
+          {/* <div className="flex justify-between items-center mt-8">
             <p className="text-sm text-gray-600">
               Showing {currentPage * itemsPerPage + 1} to {Math.min((currentPage + 1) * itemsPerPage, totalItems)} of {totalItems} entries
             </p>
@@ -746,7 +744,7 @@ const Listing = () => {
                 Next
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

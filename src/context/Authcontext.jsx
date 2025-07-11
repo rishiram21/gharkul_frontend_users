@@ -14,9 +14,9 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('authToken');
     const userData = localStorage.getItem('user');
 
-    console.log('Token:', token);
-    console.log('User Data:', userData);
-    console.log('User Data:', userData);
+    // console.log('Token:', token);
+    // console.log('User Data:', userData);
+    // console.log('User Data:', userData);
 
 
     if (token) {
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         try {
           // Safely parse the user data
           const parsedUserData = JSON.parse(userData);
-          console.log('Parsed User Data:', parsedUserData);
+          // console.log('Parsed User Data:', parsedUserData);
           
           // Validate that parsedUserData is not null/undefined
           if (parsedUserData && typeof parsedUserData === 'object') {
