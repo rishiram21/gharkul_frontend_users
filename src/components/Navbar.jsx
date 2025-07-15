@@ -181,7 +181,7 @@ const Navbar = () => {
               >
                 Listing
               </Link>
-              <Link
+              {/* <Link
                 to="/features"
                 className={`font-medium ${
                   isActive('/features')
@@ -191,7 +191,7 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Features
-              </Link>
+              </Link> */}
               <Link
                 to="/subscription"
                 className={`font-medium ${

@@ -41,7 +41,7 @@ const RazorpayPage = () => {
       currency: 'INR',
       name: 'Gharkul',
       description: 'Payment for Subscription Plan',
-      image: 'https://example.com/your_logo', // Replace with your logo URL
+      image: '/logo.png', // Replace with your logo URL
       order_id: orderId, // Use the order ID created by your backend
       handler: function (response) {
         console.log('Payment handler called:', response);

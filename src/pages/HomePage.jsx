@@ -30,6 +30,7 @@ const HomePage = () => {
   const [transactionType, setTransactionType] = useState('');
   const [selectedLocations, setSelectedLocations] = useState([]);
 
+
   // Navigation functions
 const prevSlide = () => {
   setCurrentSlide((prev) => (prev === 0 ? requirements.length - 1 : prev - 1));
@@ -44,8 +45,24 @@ const goToSlide = (index) => {
 };
 
 
+
+
+
+
+
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // const handleSearch = () => {
+  //   // Navigate to the listing page with the search filters as state
+  //   navigate('/listing', {
+  //     state: {
+  //       searchTerm,
+  //       transactionType,
+  //       selectedLocations,
+  //     },
+  //   });
+  // };
 
   const handleSearch = () => {
     // Navigate to the listing page with the search filters as state
@@ -58,12 +75,20 @@ const goToSlide = (index) => {
     });
   };
 
+  // const toggleLocation = (location) => {
+  //   setSelectedLocations((prevSelected) =>
+  //     prevSelected.includes(location)
+  //       ? prevSelected.filter((loc) => loc !== location)
+  //       : [...prevSelected, location]
+  //   );
+  // };
+
   const toggleLocation = (location) => {
-    setSelectedLocations((prevSelected) =>
-      prevSelected.includes(location)
-        ? prevSelected.filter((loc) => loc !== location)
-        : [...prevSelected, location]
-    );
+    if (selectedLocations.includes(location)) {
+      setSelectedLocations(selectedLocations.filter((loc) => loc !== location));
+    } else {
+      setSelectedLocations([...selectedLocations, location]);
+    }
   };
 
   // const handleSearch = () => {
@@ -82,12 +107,19 @@ const goToSlide = (index) => {
 const formatBHK = (bhkEnum) => {
   if (!bhkEnum) return 'BHK';
 
-  const bhkLabel = bhkEnum
-    .replace('BHK_', '')       // Remove the prefix
-    .replace('_', '.')         // Replace underscore with decimal
-    .replace('_', '.');        // In case of multiple underscores (safe fallback)
+  // Remove leading underscore
+  const cleanEnum = bhkEnum.startsWith('_') ? bhkEnum.slice(1) : bhkEnum;
 
-  return `${bhkLabel} BHK`;
+  const parts = cleanEnum.split('_');
+
+  // RK case
+  if (parts.length === 2 && parts[1] === 'RK') {
+    return `${parts[0]} RK`;
+  }
+
+  // BHK cases (remove last part 'BHK' and join the rest with dot)
+  const bhkNumber = parts.slice(0, -1).join('.'); // e.g. ['2', '5'] => "2.5"
+  return `${bhkNumber} BHK`;
 };
 
 
@@ -241,9 +273,16 @@ const handleCallClick = async (event, property) => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/get`);
       
-      // Get first 3 properties as featured
-      const topThree = (response.data || []).slice(0, 3);
-      setFeaturedProperties(topThree);
+      const allProperties = response.data || [];
+      
+      // Separate properties by type and get first 3 of each
+      const rentProperties = allProperties.filter(property => property.propertyFor === 'RENT').slice(0, 3);
+      const saleProperties = allProperties.filter(property => property.propertyFor === 'SELL').slice(0, 3);
+      
+      // Combine them back
+      const featuredProps = [...rentProperties, ...saleProperties];
+      
+      setFeaturedProperties(featuredProps);
     } catch (error) {
       console.error('Error fetching properties:', error);
     }
@@ -303,6 +342,38 @@ const handleCallClick = async (event, property) => {
       badgeColor: "bg-blue-500"
     }
   ];
+
+  // For projects slider
+const [projectSlide, setProjectSlide] = useState(0);
+const [isProjectAutoPlaying, setIsProjectAutoPlaying] = useState(true);
+
+const prevSlide1 = () => {
+  setProjectSlide((prev) => (prev === 0 ? projects.length - 1 : prev - 1));
+};
+
+const nextSlide1 = () => {
+  setProjectSlide((prev) => (prev === projects.length - 1 ? 0 : prev + 1));
+};
+
+const goToSlide1 = (index) => {
+  setProjectSlide(index);
+};
+
+const handleProjectMouseEnter = () => 
+  setIsProjectAutoPlaying(false);
+
+const handleProjectMouseLeave = () => 
+  setIsProjectAutoPlaying(true);
+
+useEffect(() => {
+  if (!isProjectAutoPlaying || projects.length <= 1) return;
+
+  const interval = setInterval(() => {
+    nextSlide1();
+  }, 4000);
+
+  return () => clearInterval(interval);
+}, [projectSlide, isProjectAutoPlaying, projects.length]);
 
   // useEffect(() => {
   //   if (!isAutoPlaying) return;
@@ -434,129 +505,124 @@ const handleCallClick = async (event, property) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Search Section */}
-<section className="relative bg-gradient-to-br from-blue-50 via-blue-60 to-blue-70 py-12 md:py-16 overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent"></div>
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+<section className="relative bg-gradient-to-br from-blue-50 via-blue-60 to-blue-70 py-6 overflow-hidden">
+  {/* Background Pattern */}
+  <div className="absolute inset-0 opacity-10">
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent"></div>
+    <div className="absolute -top-12 -right-12 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+    <div className="absolute -bottom-12 -left-12 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+  </div>
+
+  <div className="relative w-full max-w-4xl mx-auto px-4">
+    {/* Header */}
+    {/* <div className="text-center mb-4">
+      <div className="flex justify-center items-center gap-1 mb-2">
+        <Home className="w-5 h-5 text-black" />
+        <h1 className="text-xl font-bold text-black">Find Your Dream Property</h1>
+      </div>
+    </div> */}
+
+    {/* Search Container */}
+    <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/20">
+      {/* Search Bar */}
+      <div className="mb-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search by property type, location..."
+            className="w-full pl-9 pr-4 py-2 border border-blue-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white/80 backdrop-blur-sm placeholder-gray-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="relative w-full max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8 md:mb-12">
-          <div className="flex justify-center items-center gap-2 mb-4">
-            <Home className="w-8 h-8 text-white" />
-            <h1 className="text-3xl md:text-4xl font-bold text-black">Find Your Dream Property</h1>
-          </div>
-          {/* <p className="text-blue-100 text-lg md:text-xl max-w-2xl mx-auto">
-            Discover the perfect home in Pune's most desirable neighborhoods
-          </p> */}
-        </div>
-
-        {/* Search Container */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 border border-white/20">
-          
-          {/* Search Bar */}
-          <div className="mb-6 md:mb-8">
-            <div className="relative max-w-3xl mx-auto">
-              <Search className="absolute left-4 md:left-5 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5 md:w-6 md:h-6" />
-              <input
-                type="text"
-                placeholder="Search by property type, location, or requirements..."
-                className="w-full pl-12 md:pl-14 pr-6 py-4 md:py-5 border-2 border-blue-100 rounded-xl text-base md:text-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition-all duration-200 bg-white/80 backdrop-blur-sm placeholder-gray-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Transaction Type */}
-          <div className="mb-6 md:mb-8">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">Transaction Type</h3>
-            <div className="flex justify-center gap-4">
-              {["RENT", "BUY"].map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setTransactionType(option)}
-                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                    transactionType === option 
-                      ? 'bg-blue-600 text-white shadow-blue-200' 
-                      : 'bg-white text-blue-600 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Location Selection */}
-          <div className="mb-8 md:mb-10">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center flex items-center justify-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-500" />
-              Select Preferred Locations
-            </h3>
-            <div className="flex justify-center gap-3 flex-wrap max-w-4xl mx-auto">
-              {["Bibwewadi", "Baner", "Kothrud", "Kharadi", "Wakad"].map((location) => (
-                <button
-                  key={location}
-                  onClick={() => toggleLocation(location)}
-                  className={`px-6 py-3 rounded-full font-medium transition-all duration-200 text-sm md:text-base shadow-md hover:shadow-lg transform hover:scale-105 ${
-                    selectedLocations.includes(location) 
-                      ? 'bg-blue-600 text-white shadow-blue-200' 
-                      : 'bg-white text-blue-600 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  {location}
-                </button>
-              ))}
-            </div>
-            {selectedLocations.length > 0 && (
-              <p className="text-center text-blue-600 mt-3 text-sm">
-                {selectedLocations.length} location{selectedLocations.length > 1 ? 's' : ''} selected
-              </p>
-            )}
-          </div>
-
-          {/* Search Button */}
-          <div className="text-center">
+      {/* Transaction Type */}
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2 text-center">Transaction Type</h3>
+        <div className="flex justify-center gap-2">
+          {["RENT", "BUY"].map((option) => (
             <button
-              onClick={handleSearch}
-              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-12 md:px-16 py-4 md:py-5 rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-base md:text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+              key={option}
+              onClick={() => setTransactionType(option)}
+              className={`px-4 rounded-lg font-medium transition-all duration-200 text-sm shadow hover:shadow-md transform hover:scale-105 ${
+                transactionType === option
+                  ? 'bg-blue-600 text-white shadow-blue-200'
+                  : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'
+              }`}
             >
-              <Search className="w-5 h-5" />
-              Search Properties
+              {option}
             </button>
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 md:mt-12">
-          {[
-            { label: "Properties Available", value: "1,200+", icon: Home },
-            { label: "Verified Listings", value: "100%", icon: Search },
-            { label: "Locations Covered", value: "25+", icon: MapPin }
-          ].map((stat, index) => (
-            <div key={index} className="bg-white/20 backdrop-blur-sm rounded-xl p-6 text-center border border-white/30">
-              <stat.icon className="w-8 h-8 text-white mx-auto mb-2" />
-              <div className="text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-blue-100 text-sm">{stat.label}</div>
-            </div>
           ))}
-        </div> */}
+        </div>
       </div>
-    </section>
+
+      {/* Location Selection */}
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2 text-center flex items-center justify-center gap-1">
+          <MapPin className="w-4 h-4 text-blue-500" />
+          Select Locations
+        </h3>
+        <div className="flex justify-center gap-2 flex-wrap">
+          {["Bibwewadi", "Baner", "Kothrud", "Kharadi", "Wakad"].map((location) => (
+            <button
+              key={location}
+              onClick={() => toggleLocation(location)}
+              className={`px-3 py-1 rounded-full font-medium transition-all duration-200 text-xs shadow hover:shadow-md transform hover:scale-105 ${
+                selectedLocations.includes(location)
+                  ? 'bg-blue-600 text-white shadow-blue-200'
+                  : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'
+              }`}
+            >
+              {location}
+            </button>
+          ))}
+        </div>
+        {selectedLocations.length > 0 && (
+          <p className="text-center text-blue-600 mt-2 text-xs">
+            {selectedLocations.length} location{selectedLocations.length > 1 ? 's' : ''} selected
+          </p>
+        )}
+      </div>
+
+      {/* Search Button */}
+      <div className="text-center">
+        <button
+          onClick={handleSearch}
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-sm shadow hover:shadow-md transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+          <Search className="w-4 h-4" />
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 
       {/* Featured Requirements Section */}
       <section className="py-6 md:py-8 bg-white border-b border-gray-100">
         <div className="w-full px-3 md:px-6 lg:px-8">
           <div className="text-center mb-4 md:mb-6">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Star className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
-              <h2 className="text-lg md:text-2xl font-bold text-gray-800">Featured Requirements</h2>
-            </div>
+            <div className="flex items-center justify-center gap-5 mb-2">
+  {/* Left Side: Icon and Title */}
+  <div className="flex items-center space-x-2">
+    <Star className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
+    <h2 className="text-lg md:text-2xl font-bold text-gray-800">
+      Featured Requirements
+    </h2>
+  </div>
+
+  {/* Right Side: View All Link */}
+ <Link to="/featured">
+    <button className="text-sm md:text-base text-blue-600 hover:underline font-medium">
+      View All
+    </button>
+  </Link>
+</div>
+
           </div>
           {/* Slider Container */}
           <div className="relative max-w-3xl mx-auto">
@@ -1151,113 +1217,134 @@ const handleCallClick = async (event, property) => {
 
       {/* Under Construction Projects */}
       <section className="py-6 md:py-8 bg-white">
-        <div className="w-full px-3 md:px-6 lg:px-8">
-          <h2 className="text-lg md:text-2xl font-bold text-center text-gray-800 mb-4 md:mb-6">
-            Top Under Construction Projects
-          </h2>
-          <div
-            className="relative max-w-4xl mx-auto"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            {/* Navigation Arrows */}
-            <button
-              onClick={prevSlide}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-20 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5 text-gray-700" />
-            </button>
+  <div className="w-full px-3 md:px-6 lg:px-8">
 
-            <button
-              onClick={nextSlide}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-20 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
-            >
-              <ChevronRight className="w-5 h-5 text-gray-700" />
-            </button>
-            {/* Slider Container */}
-            <div className="relative rounded-lg overflow-hidden shadow-lg">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-              >
-                {projects.map((project) => (
-                  <div key={project.id} className="w-full flex-shrink-0">
-                    <div className="h-60 md:h-80 relative">
-                      <img
-                        src={project.image}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                      <div className="absolute bottom-4 left-4 md:left-6 text-white">
-                        <h3 className="text-lg md:text-xl font-bold mb-1">{project.title}</h3>
-                        <p className="text-blue-100 text-sm md:text-base mb-2">{project.subtitle}</p>
-                        <div className="flex items-center space-x-1 text-blue-200 text-xs md:text-sm">
-                          <MapPin className="w-3 h-3 md:w-4 md:h-4" />
-                          <span>{project.location}</span>
-                        </div>
-                      </div>
-                      <div className="absolute bottom-4 right-4 md:right-6 text-right text-white">
-                        <div className="text-xl md:text-2xl font-bold mb-1">{project.price}</div>
-                        <div className="text-blue-100 text-sm md:text-base mb-1">{project.status}</div>
-                        <div className="flex items-center justify-end space-x-1 text-blue-200 text-xs md:text-sm">
-                          <Calendar className="w-3 h-3 md:w-4 md:h-4" />
-                          <span>{project.completion}</span>
-                        </div>
-                      </div>
-                      <div className="absolute top-4 right-4 md:right-6">
-                        <span className={`${project.badgeColor} text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium`}>
-                          {project.badge}
-                        </span>
-                      </div>
-                      <div className="absolute top-4 left-4 md:left-6">
-                        <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
-                          <span className="text-white text-xs md:text-sm font-medium">
-                            {project.status}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+    {/* Title + View All */}
+    <div className="flex items-center justify-center mb-4 md:mb-6">
+      <h2 className="text-lg md:text-2xl font-bold text-gray-800">
+        Top Under Construction Projects
+      </h2>
+    </div>
+
+    {/* Slider Container */}
+    <div
+      className="relative max-w-4xl mx-auto"
+      onMouseEnter={handleProjectMouseEnter}
+      onMouseLeave={handleProjectMouseLeave}
+    >
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevSlide1}
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-20 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
+      >
+        <ChevronLeft className="w-5 h-5 text-gray-700" />
+      </button>
+
+      <button
+        onClick={nextSlide1}
+        className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-20 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
+      >
+        <ChevronRight className="w-5 h-5 text-gray-700" />
+      </button>
+
+      {/* Main Slide Wrapper */}
+      <div className="relative rounded-lg overflow-hidden shadow-lg">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${projectSlide * 100}%)` }}
+        >
+          {projects.map((project) => (
+            <div key={project.id} className="w-full flex-shrink-0">
+              <div className="h-60 md:h-80 relative">
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+
+                {/* Project Info */}
+                <div className="absolute bottom-4 left-4 md:left-6 text-white">
+                  <h3 className="text-lg md:text-xl font-bold mb-1">
+                    {project.title}
+                  </h3>
+                  <p className="text-blue-100 text-sm md:text-base mb-2">
+                    {project.subtitle}
+                  </p>
+                  <div className="flex items-center space-x-1 text-blue-200 text-xs md:text-sm">
+                    <MapPin className="w-3 h-3 md:w-4 md:h-4" />
+                    <span>{project.location}</span>
                   </div>
-                ))}
+                </div>
+
+                <div className="absolute bottom-4 right-4 md:right-6 text-right text-white">
+                  <div className="text-xl md:text-2xl font-bold mb-1">{project.price}</div>
+                  <div className="text-blue-100 text-sm md:text-base mb-1">{project.status}</div>
+                  <div className="flex items-center justify-end space-x-1 text-blue-200 text-xs md:text-sm">
+                    <Calendar className="w-3 h-3 md:w-4 md:h-4" />
+                    <span>{project.completion}</span>
+                  </div>
+                </div>
+
+                {/* Badges */}
+                <div className="absolute top-4 right-4 md:right-6">
+                  <span className={`${project.badgeColor} text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium`}>
+                    {project.badge}
+                  </span>
+                </div>
+                <div className="absolute top-4 left-4 md:left-6">
+                  <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
+                    <span className="text-white text-xs md:text-sm font-medium">
+                      {project.status}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex justify-center space-x-2 mt-4">
-              {projects.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                    index === currentSlide ? 'bg-blue-500' : 'bg-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <div className="flex justify-center space-x-2 mt-4 overflow-x-auto pb-2">
-              {projects.map((project, index) => (
-                <button
-                  key={project.id}
-                  onClick={() => goToSlide(index)}
-                  className={`flex-shrink-0 p-2 rounded-lg transition-colors ${
-                    index === currentSlide
-                      ? 'bg-blue-100 border-2 border-blue-500'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-xs font-semibold text-gray-800 truncate max-w-20">
-                      {project.title}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {project.location.split(',')[0]}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
+      </div>
+
+      {/* Dot Indicators */}
+      <div className="flex justify-center space-x-2 mt-4">
+        {projects.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide1(index)}
+            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+              index === projectSlide ? 'bg-blue-500' : 'bg-gray-300'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Thumbnail Navigation */}
+      <div className="flex justify-center space-x-2 mt-4 overflow-x-auto pb-2">
+        {projects.map((project, index) => (
+          <button
+            key={project.id}
+            onClick={() => goToSlide1(index)}
+            className={`flex-shrink-0 p-2 rounded-lg transition-colors ${
+              index === projectSlide
+                ? 'bg-blue-100 border-2 border-blue-500'
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            <div className="text-center">
+              <div className="text-xs font-semibold text-gray-800 truncate max-w-20">
+                {project.title}
+              </div>
+              <div className="text-xs text-gray-600">
+                {project.location.split(',')[0]}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
 
       {/* Quick Stats */}
       <section className="py-6 md:py-8 bg-blue-50">

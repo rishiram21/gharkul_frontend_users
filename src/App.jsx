@@ -17,8 +17,9 @@ import Subscription from './pages/Subscription';
 import UserProfile from './pages/UserProfile';
 import CheckoutPage from './pages/CheckoutPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-import RazorpayPage from './components/RazorpayPage'; // Import the RazorpayPage component
-import Editdetails from './subpages/Editdetails';
+import RazorpayPage from './components/RazorpayPage';
+import FeaturedRequirement from './pages/FeaturedRequirement';
+import Editproperty from './subpages/Editproperty';
 
 
 const ProtectedRoute = ({ children }) => {
@@ -39,6 +40,7 @@ function App() {
               <Route path="/home" element={<HomePage />} />
               <Route path="/listing" element={<Listing />} />
               <Route path="/features" element={<Features />} />
+              <Route path="/featured" element={<FeaturedRequirement />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/razorpay" element={<RazorpayPage />} /> {/* Add the Razorpay route */}
@@ -70,7 +72,7 @@ function App() {
               {/* Sub-Pages */}
               <Route path="/listing/:id" element={<Propertydetails />} />
 
-              <Route path="/editproperty/:id" element={<Editdetails />} />
+              <Route path="/editproperty/:propertyId" element={<Editproperty />} />
               
               
             </Routes>

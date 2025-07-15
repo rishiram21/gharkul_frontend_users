@@ -2,6 +2,8 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from '../context/Authcontext'; // Adjust the import path as necessary
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PostProperty = () => {
   const navigate = useNavigate();
@@ -227,15 +229,108 @@ const PostProperty = () => {
   // };
 
 
-  const handleSubmit = async (e) => {
+//   const handleSubmit = async (e) => {
+//   e.preventDefault();
+
+//   const formData = new FormData();
+
+//   const userId = user?.id;
+//   if (!userId) {
+//     console.error("User ID is not available");
+//     alert("User ID is not available. Please log in again.");
+//     return;
+//   }
+
+//   const propertyData = {
+//     postedByUserId: user.id,
+//     category: propertyType || "RESIDENTIAL",
+//     propertyFor: transactionType || "RENT",
+//     apartmentType: apartmentType || "FLAT",
+//     propertyName: propertyName || "test",
+//     bhkType: bhkType || "BHK_6",
+//     floor: parseInt(floor) || 1,
+//     totalFloors: parseInt(totalFloor) || 1,
+//     totalBuildUpArea: parseFloat(builtUpArea) || 1,
+//     carpetArea: parseFloat(carpetArea) || 1,
+//     address: {
+//       area: area || "test",
+//       city: "Pune",
+//       state: state || "test",
+//       pinCode: pincode || "1",
+//     },
+//     buildingType: buildingType || "",
+//     plotArea: parseFloat(plotArea) || 0,
+//     length: parseFloat(length) || 0,
+//     width: parseFloat(width) || 0,
+//     boundaryWall: boundaryWall || "",
+//     expectedPrice: parseFloat(expectedPrice) || 0,
+//     deposit: parseFloat(expectedDeposit) || 1,
+//     monthlyMaintenance: parseFloat(monthlyMaintenance) || 1,
+//     availableFrom:
+//       new Date(availableFrom).toISOString() || new Date().toISOString(),
+//     preferred_tenants: preferredTenants || "Anyone",
+//     furnishedType: furnishing || "UNFURNISHED",
+//     description: description || "test",
+//     amenityIds: selectedAmenities || [],
+//   };
+
+//   // console.log("Property Data:", propertyData);
+//   formData.append("property", JSON.stringify(propertyData));
+
+//   // ✅ Image validation
+//   if (selectedFiles.length === 0) {
+//     try {
+//       alert("No images uploaded. Attaching default image...");
+
+//       const response = await fetch("/default.png"); // Ensure this image exists in /public
+//       const blob = await response.blob();
+//       const defaultFile = new File([blob], "default.png", { type: blob.type });
+//       formData.append("images", defaultFile);
+//     } catch (error) {
+//       console.error("Failed to load default image:", error);
+//       alert("Default image could not be attached. Please try again.");
+//       return;
+//     }
+//   } else if (selectedFiles.length > 4) {
+//     alert("You can upload a maximum of 4 images.");
+//     return;
+//   } else {
+//     selectedFiles.forEach((file) => {
+//       formData.append("images", file);
+//     });
+//   }
+
+//   // ✅ Post the form data
+//   try {
+//     const response = await axios.post(
+//       `${import.meta.env.VITE_BASE_URL}/api/properties/add`,
+//       formData,
+//       {
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//         },
+//       }
+//     );
+
+//     console.log("Property posted successfully:", response.data);
+//     alert("Property posted successfully!");
+//     navigate('/listing');
+//   } catch (error) {
+//     console.error(
+//       "Error posting property:",
+//       error.response ? error.response.data : error.message
+//     );
+//     alert("Error posting property. Please try again.");
+//   }
+// };
+
+const handleSubmit = async (e) => {
   e.preventDefault();
-
   const formData = new FormData();
-
   const userId = user?.id;
   if (!userId) {
     console.error("User ID is not available");
-    alert("User ID is not available. Please log in again.");
+    toast.error("User ID is not available. Please log in again.");
     return;
   }
 
@@ -264,33 +359,29 @@ const PostProperty = () => {
     expectedPrice: parseFloat(expectedPrice) || 0,
     deposit: parseFloat(expectedDeposit) || 1,
     monthlyMaintenance: parseFloat(monthlyMaintenance) || 1,
-    availableFrom:
-      new Date(availableFrom).toISOString() || new Date().toISOString(),
+    availableFrom: new Date(availableFrom).toISOString() || new Date().toISOString(),
     preferred_tenants: preferredTenants || "Anyone",
     furnishedType: furnishing || "UNFURNISHED",
     description: description || "test",
     amenityIds: selectedAmenities || [],
   };
 
-  // console.log("Property Data:", propertyData);
   formData.append("property", JSON.stringify(propertyData));
 
-  // ✅ Image validation
   if (selectedFiles.length === 0) {
     try {
-      alert("No images uploaded. Attaching default image...");
-
-      const response = await fetch("/default.png"); // Ensure this image exists in /public
+      toast.info("No images uploaded. Attaching default image...");
+      const response = await fetch("/default.png");
       const blob = await response.blob();
       const defaultFile = new File([blob], "default.png", { type: blob.type });
       formData.append("images", defaultFile);
     } catch (error) {
       console.error("Failed to load default image:", error);
-      alert("Default image could not be attached. Please try again.");
+      toast.error("Default image could not be attached. Please try again.");
       return;
     }
   } else if (selectedFiles.length > 4) {
-    alert("You can upload a maximum of 4 images.");
+    toast.error("You can upload a maximum of 4 images.");
     return;
   } else {
     selectedFiles.forEach((file) => {
@@ -298,7 +389,6 @@ const PostProperty = () => {
     });
   }
 
-  // ✅ Post the form data
   try {
     const response = await axios.post(
       `${import.meta.env.VITE_BASE_URL}/api/properties/add`,
@@ -309,16 +399,16 @@ const PostProperty = () => {
         },
       }
     );
-
     console.log("Property posted successfully:", response.data);
-    alert("Property posted successfully!");
+    toast.success("Property posted successfully!");
     navigate('/listing');
   } catch (error) {
     console.error(
       "Error posting property:",
       error.response ? error.response.data : error.message
     );
-    alert("Error posting property. Please try again.");
+    const errorMessage = error.response ? error.response.data : "Error posting property. Please try again.";
+    toast.error(errorMessage);
   }
 };
 
@@ -1280,7 +1370,6 @@ const renderPropertyPhotos = () => (
             {renderLocationDetails()}
             {renderPricingDetails()}
             {renderAmenities()}
-            {/* {renderPhoneNumber()} */}
             {renderPropertyPhotos()}
             <button
               type="submit"
@@ -1291,6 +1380,7 @@ const renderPropertyPhotos = () => (
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

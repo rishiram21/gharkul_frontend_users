@@ -15,6 +15,8 @@ const UserProfile = () => {
   const fileInputRef = useRef(null);
   const [requirements, setRequirements] = useState([]);
 
+  
+
   useEffect(() => {
     const fetchRequirements = async () => {
       if (user && user.id) {
@@ -233,7 +235,7 @@ const [showModal, setShowModal] = useState(false);
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {properties.length > 0 ? (
-        properties.slice(0, 6).map((property) => (
+        properties.slice(0, 20).map((property) => (
           <div key={property.propertyId} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
             <div className="relative">
               <img
@@ -253,7 +255,7 @@ const [showModal, setShowModal] = useState(false);
               <h4 className="font-semibold text-gray-900 mb-1">{property.propertyName}</h4>
               <p className="text-sm text-gray-600 mb-2 flex items-center">
                 <MapPin className="w-3 h-3 mr-1" />
-                {property.address?.street}, {property.address?.area}, {property.address?.city}
+                 {property.address?.area}, {property.address?.city} - {property.address?.pinCode}
               </p>
               <p className="text-lg font-bold text-green-600 mb-3">₹{property.expectedPrice?.toLocaleString()}</p>
               {/* <div className="flex items-center justify-between text-sm text-gray-500">
@@ -280,12 +282,12 @@ const [showModal, setShowModal] = useState(false);
                   <strong>Furnished Type:</strong> {property.furnishedType}
                 </p>
 
-                {/* <button
+                <button
       onClick={() => handleEdit(property)}
       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
     >
       Edit
-    </button> */}
+    </button>
               </div>
             </div>
           </div>

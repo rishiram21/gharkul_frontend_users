@@ -2,8 +2,10 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from '../context/Authcontext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Editdetails = () => {
+const EditProperty = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const { propertyId } = useParams();
@@ -52,15 +54,12 @@ const Editdetails = () => {
   });
 
   const [propertyType, setPropertyType] = useState("");
-  const [subPropertyType, setSubPropertyType] = useState("");
   const [transactionType, setTransactionType] = useState("");
 
   useEffect(() => {
     const fetchEnums = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/properties/all_enum`
-        );
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/all_enum`);
         setEnums(response.data);
       } catch (error) {
         console.error("Error fetching enums:", error);
@@ -69,9 +68,7 @@ const Editdetails = () => {
 
     const fetchAmenities = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/api/amenities/get`
-        );
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/amenities/get`);
         const data = await response.json();
         setAmenities(data);
       } catch (error) {
@@ -81,14 +78,17 @@ const Editdetails = () => {
 
     const fetchPropertyDetails = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/properties/${propertyId}`
-        );
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/properties/get/${propertyId}`);
         const propertyData = response.data;
-        setProperty(propertyData);
+        setProperty({
+          ...propertyData,
+          area: propertyData.address?.area || "",
+          state: propertyData.address?.state || "",
+          pincode: propertyData.address?.pinCode || "",
+        });
         setPropertyType(propertyData.category);
         setTransactionType(propertyData.propertyFor);
-        setSelectedFiles(propertyData.images || []);
+        setSelectedFiles(propertyData.propertyGallery || []);
       } catch (error) {
         console.error("Error fetching property details:", error);
       }
@@ -110,11 +110,16 @@ const Editdetails = () => {
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
-    if (files.length > 4) {
-      alert("You can upload a maximum of 4 images.");
+    const totalFiles = selectedFiles.length + files.length;
+    if (totalFiles > 8) {
+      toast.error("You can upload a maximum of 8 images.");
       return;
     }
-    setSelectedFiles(files);
+    setSelectedFiles(prevFiles => [...prevFiles, ...files]);
+  };
+
+  const handleRemoveFile = (index) => {
+    setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -124,7 +129,12 @@ const Editdetails = () => {
 
     if (!userId) {
       console.error("User ID is not available");
-      alert("User ID is not available. Please log in again.");
+      toast.error("User ID is not available. Please log in again.");
+      return;
+    }
+
+    if (!property.propertyName || !property.area || !property.expectedPrice) {
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -133,17 +143,29 @@ const Editdetails = () => {
       postedByUserId: userId,
       category: propertyType,
       propertyFor: transactionType,
+      address: {
+        area: property.area,
+        city: "Pune",
+        state: property.state,
+        pinCode: property.pincode,
+      },
       amenityIds: property.selectedAmenities,
     };
 
     formData.append("property", JSON.stringify(propertyData));
 
     if (selectedFiles.length === 0) {
-      alert("No images uploaded. Attaching default image...");
-      const response = await fetch("/default-image.jpg");
-      const blob = await response.blob();
-      const defaultFile = new File([blob], "default-image.jpg", { type: blob.type });
-      formData.append("images", defaultFile);
+      try {
+        toast.info("No images uploaded. Attaching default image...");
+        const response = await fetch("/default.png");
+        const blob = await response.blob();
+        const defaultFile = new File([blob], "default.png", { type: blob.type });
+        formData.append("images", defaultFile);
+      } catch (error) {
+        console.error("Failed to load default image:", error);
+        toast.error("Default image could not be attached. Please try again.");
+        return;
+      }
     } else {
       selectedFiles.forEach((file) => {
         formData.append("images", file);
@@ -161,14 +183,12 @@ const Editdetails = () => {
         }
       );
       console.log("Property updated successfully:", response.data);
-      alert("Property updated successfully!");
+      toast.success("Property updated successfully!");
       navigate('/listing');
     } catch (error) {
-      console.error(
-        "Error updating property:",
-        error.response ? error.response.data : error.message
-      );
-      alert("Error updating property. Please try again.");
+      console.error("Error updating property:", error.response ? error.response.data : error.message);
+      const errorMessage = error.response ? error.response.data.message : "Error updating property. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -204,12 +224,7 @@ const Editdetails = () => {
           {enums.propertyFor
             .filter((type) => {
               if (propertyType === "RESIDENTIAL") {
-                return (
-                  type === "RENT" ||
-                  type === "SELL" ||
-                  type === "PG" ||
-                  type === "HOSTEL"
-                );
+                return type === "RENT" || type === "SELL" || type === "PG" || type === "HOSTEL";
               } else if (propertyType === "COMMERCIAL") {
                 return type === "RENT" || type === "SELL";
               } else if (propertyType === "PLOT") {
@@ -257,7 +272,76 @@ const Editdetails = () => {
               value={property.propertyName}
               onChange={handleInputChange}
             />
-            {/* Add other fields similarly */}
+            <div className="flex flex-wrap gap-3 mb-3">
+              {enums.apartmentType.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    property.apartmentType === type
+                      ? "bg-indigo-600 text-white shadow-lg"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setProperty(prev => ({ ...prev, apartmentType: type }))}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            <div className="flex space-x-3 mb-3">
+              <select
+                className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                name="bhkType"
+                value={property.bhkType}
+                onChange={handleInputChange}
+              >
+                <option value="">BHK Type</option>
+                {enums.bhkType.map((type) => {
+                  const displayText = type.replace('BHK_', '').replace('_', '.');
+                  return (
+                    <option key={type} value={type}>
+                      {`BHK ${displayText}`}
+                    </option>
+                  );
+                })}
+              </select>
+              <input
+                type="number"
+                className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                placeholder="Total Floors"
+                name="totalFloor"
+                value={property.totalFloor}
+                onChange={handleInputChange}
+                min={1}
+              />
+              <input
+                type="number"
+                className="w-1/3 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                placeholder="Floor"
+                name="floor"
+                value={property.floor}
+                onChange={handleInputChange}
+                min={0}
+              />
+            </div>
+            <div className="flex space-x-3 mb-3">
+              <input
+                type="text"
+                placeholder="Built-up Area (sq.ft)"
+                className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                name="builtUpArea"
+                value={property.builtUpArea}
+                onChange={handleInputChange}
+              />
+              <input
+                type="text"
+                placeholder="Carpet Area (sq.ft)"
+                className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                name="carpetArea"
+                value={property.carpetArea}
+                onChange={handleInputChange}
+              />
+            </div>
           </>
         )}
       </div>
@@ -283,7 +367,29 @@ const Editdetails = () => {
           value={property.area}
           onChange={handleInputChange}
         />
-        {/* Add other fields similarly */}
+        <div className="flex space-x-3 mb-3">
+          <input
+            type="text"
+            placeholder="State"
+            className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            name="state"
+            value={property.state}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            placeholder="Pin Code"
+            className="w-1/2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            name="pincode"
+            value={property.pincode}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '' || pinCodeRegex.test(val)) {
+                handleInputChange(e);
+              }
+            }}
+          />
+        </div>
       </div>
     );
   };
@@ -299,7 +405,54 @@ const Editdetails = () => {
           </span>
           Pricing Details
         </h2>
-        {/* Add pricing fields similarly */}
+        {propertyType === "RESIDENTIAL" && transactionType === "RENT" && (
+          <>
+            <div className="flex space-x-3 mb-3">
+              <div className="w-1/2">
+                <input
+                  type="text"
+                  placeholder="Expected Rent (INR)"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  name="expectedPrice"
+                  value={property.expectedPrice}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="w-1/2">
+                <input
+                  type="text"
+                  placeholder="Expected Deposit (INR)"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  name="expectedDeposit"
+                  value={property.expectedDeposit}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+            <div className="w-full">
+              <input
+                type="text"
+                placeholder="Monthly Maintenance (INR)"
+                className="w-full p-3 border border-gray-300 rounded-xl mb-1 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                name="monthlyMaintenance"
+                value={property.monthlyMaintenance}
+                onChange={handleInputChange}
+              />
+            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Available From
+            </label>
+            <input
+              type="date"
+              placeholder="Available From"
+              className="w-full p-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              name="availableFrom"
+              value={property.availableFrom}
+              onChange={handleInputChange}
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </>
+        )}
       </div>
     );
   };
@@ -345,7 +498,7 @@ const Editdetails = () => {
       </h2>
       <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center">
         <p className="mb-2 text-gray-700">
-          Upload 1–4 images (required)
+          Upload 1–8 images (required)
         </p>
         <input
           type="file"
@@ -357,7 +510,7 @@ const Editdetails = () => {
         {selectedFiles.length === 0 ? (
           <div className="flex justify-center mt-4">
             <img
-              src="/default.jpg"
+              src="/default.png"
               alt="Default"
               className="w-40 h-40 object-cover rounded-lg border"
             />
@@ -365,12 +518,20 @@ const Editdetails = () => {
         ) : (
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
             {selectedFiles.map((file, index) => (
-              <img
-                key={index}
-                src={URL.createObjectURL(file)}
-                alt={`Selected ${index}`}
-                className="w-32 h-32 object-cover rounded-lg border"
-              />
+              <div key={index} className="relative">
+                <img
+                  src={typeof file === 'string' ? file : URL.createObjectURL(file)}
+                  alt={`Selected ${index}`}
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(index)}
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                >
+                  &times;
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -406,8 +567,9 @@ const Editdetails = () => {
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
 
-export default Editdetails;
+export default EditProperty;
